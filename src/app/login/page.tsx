@@ -8,25 +8,29 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
 
+  // 👇 Add all the admin emails you want here
+  const ADMINS = [
+    'mbumarash1@gmail.com',
+    'muhunzidavid@gmail.com',
+    // add more as needed…
+  ]
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const normalized = email.trim().toLowerCase()
-    if (normalized !== 'mbumarash1@gmail.com') {
-      setMessage('❌ You are not admin')
+    if (!ADMINS.includes(normalized)) {
+      setMessage('❌ You are not an admin')
       return
     }
 
-    // ✅ Only admin email gets here
     setMessage('Sending magic link…')
 
-    const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/admin/new`
-
     const { error } = await supabase.auth.signInWithOtp({
-      email,
-       options: {
-        // ← this tells Supabase where to send you after you click the magic-link
-        emailRedirectTo: 'https://pedspulse.me/admin/new',
+      email: normalized,
+      options: {
+        // redirect back to your protected admin new page
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/new`,
       },
     })
 
@@ -65,7 +69,7 @@ export default function LoginPage() {
         {message && (
           <p
             className={`text-sm mt-2 ${
-              message === 'You are not admin' ? 'text-red-400' : 'text-teal-400'
+              message.startsWith('❌') ? 'text-red-400' : 'text-teal-400'
             }`}
           >
             {message}

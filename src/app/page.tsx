@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import NewsletterForm from '@/components/NewsletterForm'   // ← make sure this path is correct
+import InteractiveCourseSection from '@/components/interactive/InteractiveCourseSection'  // ← import it
 
 export default function LandingPage() {
   const [open, setOpen] = useState(false)
@@ -112,6 +113,13 @@ export default function LandingPage() {
           >
             📬 Get Updates
           </a>
+        </div>
+      </section>
+      {/* New Interactive Courses Section */}
+      <section id="interactive-courses" className="py-12 bg-[#0B0F19]">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-6 text-center">👩‍⚕️ Interactive Cases</h2>
+          <InteractiveCourseSection />
         </div>
       </section>
 

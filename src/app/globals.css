@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "tailwindcss/typography";
+@import "tailwindcss/forms";
+
 
 
 :root {
