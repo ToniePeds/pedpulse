@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PedVent Sim — Ventilator Waveform Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060c10;
+  --bg2: #0b1219;
+  --bg3: #101c28;
+  --bg4: #162233;
+  --monitor-bg: #040a0e;
+  --green: #00ff88;
+  --green-dim: #00ff8830;
+  --green-mid: #00ff8870;
+  --cyan: #00e0ff;
+  --cyan-dim: #00e0ff30;
+  --amber: #ffb800;
+  --amber-dim: #ffb80030;
+  --red: #ff3355;
+  --red-dim: #ff335530;
+  --purple: #b48eff;
+  --text: #d4dee8;
+  --text2: #7d92a8;
+  --text3: #3e5468;
+  --border: #1a2d40;
+  --glow-green: 0 0 15px rgba(0,255,136,0.15);
+  --glow-cyan: 0 0 15px rgba(0,224,255,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Lora',Georgia,serif; overflow-x:hidden; }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--text3); border-radius:3px; }
+
+.mono { font-family:'IBM Plex Mono',monospace; }
+
+/* ===== APP SHELL ===== */
+.app { min-height:100vh; display:flex; flex-direction:column; }
+
+.topbar {
+  position:sticky; top:0; z-index:100;
+  background:rgba(6,12,16,0.92); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0.6rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo {
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:700; font-size:0.8rem;
+  color:var(--green); letter-spacing:2px;
+  display:flex; align-items:center; gap:0.6rem;
+}
+.logo svg { width:20px; height:20px; }
+.topbar-right { display:flex; align-items:center; gap:1.25rem; }
+.progress-chip {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.65rem; font-weight:600;
+  padding:0.3rem 0.75rem;
+  border-radius:20px;
+  background:var(--green-dim);
+  color:var(--green);
+  letter-spacing:1px;
+}
+.score-chip {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.65rem; font-weight:600;
+  padding:0.3rem 0.75rem;
+  border-radius:20px;
+  background:var(--cyan-dim);
+  color:var(--cyan);
+}
+
+/* ===== SCREEN STATES ===== */
+.screen { display:none; animation:fadeUp 0.5s ease; }
+.screen.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== START SCREEN ===== */
+.start-screen {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  min-height:calc(100vh - 52px);
+  text-align:center; padding:2rem;
+  position:relative;
+}
+.start-screen::before {
+  content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(0,255,136,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(0,224,255,0.03) 0%, transparent 50%);
+  pointer-events:none;
+}
+.start-title {
+  font-size:2.8rem; font-weight:700;
+  background:linear-gradient(135deg,var(--green),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:0.75rem; position:relative;
+}
+.start-sub {
+  font-size:1.05rem; color:var(--text2);
+  max-width:520px; margin-bottom:2.5rem; line-height:1.7;
+}
+.start-btn {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.85rem; font-weight:600;
+  padding:0.9rem 2.5rem;
+  border:none; border-radius:10px;
+  background:var(--green); color:var(--bg);
+  cursor:pointer; transition:all 0.3s;
+  letter-spacing:1px; text-transform:uppercase;
+  position:relative;
+}
+.start-btn:hover { transform:translateY(-2px); box-shadow:var(--glow-green); }
+.start-stats {
+  display:flex; gap:2rem; margin-top:3rem;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.7rem; color:var(--text3);
+  letter-spacing:1px; text-transform:uppercase;
+}
+.start-stats span { color:var(--green); font-weight:700; }
+
+/* ===== CASE SCREEN ===== */
+.case-layout {
+  max-width:1200px; margin:0 auto;
+  padding:1.5rem;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:1.25rem;
+}
+
+/* Vignette */
+.vignette {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1.25rem 1.5rem;
+  position:relative;
+}
+.vignette::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+  border-radius:12px 12px 0 0;
+}
+.case-badge {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.6rem; font-weight:700;
+  color:var(--amber); letter-spacing:2px;
+  text-transform:uppercase; margin-bottom:0.5rem;
+}
+.vignette h2 { font-size:1.15rem; font-weight:600; margin-bottom:0.6rem; }
+.vignette p { font-size:0.9rem; color:var(--text2); line-height:1.7; }
+.vent-settings {
+  display:flex; flex-wrap:wrap; gap:0.5rem;
+  margin-top:0.75rem;
+}
+.setting-pill {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.6rem; font-weight:600;
+  padding:0.25rem 0.6rem;
+  border-radius:6px;
+  background:var(--bg4); color:var(--cyan);
+  border:1px solid rgba(0,224,255,0.15);
+}
+
+/* Monitor */
+.monitor {
+  background:var(--monitor-bg);
+  border:2px solid #1a2d3a;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.5), 0 4px 30px rgba(0,0,0,0.4);
+  position:relative;
+}
+.monitor-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.5rem 1rem;
+  background:rgba(0,0,0,0.4);
+  border-bottom:1px solid #1a2d3a;
+}
+.monitor-label {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.6rem; font-weight:700;
+  color:var(--green); letter-spacing:2px;
+  text-transform:uppercase;
+}
+.monitor-values {
+  display:flex; gap:1rem;
+}
+.mv-item {
+  font-family:'IBM Plex Mono',monospace;
+  text-align:right;
+}
+.mv-label { font-size:0.5rem; color:var(--text3); letter-spacing:1px; }
+.mv-val { font-size:1rem; font-weight:700; }
+.mv-green { color:var(--green); }
+.mv-cyan { color:var(--cyan); }
+.mv-amber { color:var(--amber); }
+
+.waveform-panel {
+  padding:0.75rem;
+  display:flex; flex-direction:column; gap:0.5rem;
+}
+.wf-row {
+  position:relative;
+  height:120px;
+  background:rgba(0,10,15,0.6);
+  border:1px solid #0f1e2a;
+  border-radius:6px;
+  overflow:hidden;
+}
+.wf-row-label {
+  position:absolute; top:4px; left:8px; z-index:2;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.55rem; font-weight:600;
+  letter-spacing:1px; text-transform:uppercase;
+  opacity:0.6;
+}
+.wf-canvas {
+  width:100%; height:100%;
+}
+
+/* Scanline overlay */
+.monitor::after {
+  content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events:none;
+  border-radius:12px;
+}
+
+/* Question panel */
+.question-panel {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1.5rem;
+}
+.q-label {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.6rem; font-weight:700;
+  color:var(--amber); letter-spacing:2px;
+  text-transform:uppercase; margin-bottom:0.5rem;
+}
+.q-text {
+  font-size:1.05rem; font-weight:600;
+  margin-bottom:1.25rem; line-height:1.6;
+}
+.options { display:flex; flex-direction:column; gap:0.5rem; }
+.opt-btn {
+  font-family:'Lora',serif;
+  font-size:0.9rem;
+  padding:0.85rem 1.15rem;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--bg3);
+  color:var(--text2);
+  cursor:pointer;
+  transition:all 0.25s;
+  text-align:left;
+  display:flex; align-items:center; gap:0.75rem;
+  position:relative;
+}
+.opt-letter {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.7rem; font-weight:700;
+  width:26px; height:26px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:6px; flex-shrink:0;
+  background:var(--bg4); color:var(--text3);
+  transition:all 0.25s;
+}
+.opt-btn:hover {
+  border-color:var(--cyan);
+  color:var(--text);
+  background:var(--bg4);
+}
+.opt-btn:hover .opt-letter {
+  background:var(--cyan-dim); color:var(--cyan);
+}
+.opt-btn.correct {
+  border-color:var(--green);
+  background:rgba(0,255,136,0.06);
+  color:var(--green);
+}
+.opt-btn.correct .opt-letter {
+  background:var(--green); color:var(--bg);
+}
+.opt-btn.wrong {
+  border-color:var(--red);
+  background:rgba(255,51,85,0.06);
+  color:var(--red);
+}
+.opt-btn.wrong .opt-letter {
+  background:var(--red); color:#fff;
+}
+.opt-btn.locked { pointer-events:none; }
+.opt-btn.dimmed { opacity:0.4; }
+
+/* Feedback */
+.feedback {
+  margin-top:1rem;
+  padding:1rem 1.25rem;
+  border-radius:10px;
+  font-size:0.88rem;
+  line-height:1.7;
+  display:none;
+  animation:fadeUp 0.4s ease;
+}
+.feedback.show { display:block; }
+.feedback.correct-fb {
+  background:rgba(0,255,136,0.06);
+  border:1px solid rgba(0,255,136,0.2);
+  color:var(--green);
+}
+.feedback.wrong-fb {
+  background:rgba(255,51,85,0.06);
+  border:1px solid rgba(255,51,85,0.2);
+  color:var(--red);
+}
+.feedback strong { color:var(--text); }
+
+.next-btn {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.75rem; font-weight:600;
+  padding:0.7rem 2rem;
+  border:none; border-radius:8px;
+  background:var(--green); color:var(--bg);
+  cursor:pointer; margin-top:1rem;
+  letter-spacing:1px; text-transform:uppercase;
+  transition:all 0.3s;
+}
+.next-btn:hover { box-shadow:var(--glow-green); transform:translateY(-1px); }
+
+/* Results */
+.results-screen {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  min-height:calc(100vh - 52px);
+  text-align:center; padding:2rem;
+}
+.results-score {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:5rem; font-weight:700;
+  background:linear-gradient(135deg,var(--green),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.results-label {
+  font-size:1.2rem; color:var(--text2);
+  margin-bottom:0.5rem;
+}
+.results-msg {
+  font-size:1rem; color:var(--text2);
+  max-width:500px; margin:1rem auto 2rem;
+  line-height:1.7;
+}
+.results-breakdown {
+  display:flex; flex-wrap:wrap; gap:0.5rem;
+  justify-content:center; margin-bottom:2rem;
+}
+.rb-dot {
+  width:18px; height:18px; border-radius:4px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.5rem; font-weight:700;
+}
+.rb-correct { background:var(--green); color:var(--bg); }
+.rb-wrong { background:var(--red); color:#fff; }
+.rb-unanswered { background:var(--text3); color:var(--bg2); }
+
+/* Annotations on waveform */
+.wf-annotation {
+  position:absolute;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.55rem; font-weight:600;
+  padding:0.15rem 0.4rem;
+  border-radius:3px;
+  pointer-events:none;
+  z-index:5;
+  white-space:nowrap;
+}
+
+@media(max-width:768px) {
+  .start-title { font-size:2rem; }
+  .case-layout { padding:1rem; }
+  .wf-row { height:90px; }
+  .mv-val { font-size:0.8rem; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="2 12 6 12 8 6 12 18 14 10 16 14 18 12 22 12"/>
+      </svg>
+      PEDVENT SIM
+    </div>
+    <div class="topbar-right">
+      <div class="progress-chip" id="progressChip">CASE 0 / 0</div>
+      <div class="score-chip" id="scoreChip">SCORE: 0</div>
+    </div>
+  </div>
+
+  <!-- Start Screen -->
+  <div class="screen active" id="startScreen">
+    <div class="start-screen">
+      <div class="start-title">PedVent Sim</div>
+      <p class="start-sub">
+        Real pediatric case vignettes with animated ventilator waveforms.
+        Identify abnormalities, diagnose asynchronies, and make ventilator adjustments.
+      </p>
+      <button class="start-btn" onclick="startQuiz()">Begin Simulation</button>
+      <div class="start-stats">
+        <div><span>12</span> CASES</div>
+        <div><span>3</span> WAVEFORMS EACH</div>
+        <div><span>PICU</span> + <span>NICU</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Case Screen -->
+  <div class="screen" id="caseScreen">
+    <div class="case-layout">
+      <div class="vignette" id="vignettePanel"></div>
+      <div class="monitor" id="monitorPanel">
+        <div class="monitor-bar">
+          <div class="monitor-label">SIM-VENT 3000</div>
+          <div class="monitor-values" id="monitorValues"></div>
+        </div>
+        <div class="waveform-panel" id="waveformPanel"></div>
+      </div>
+      <div class="question-panel" id="questionPanel"></div>
+    </div>
+  </div>
+
+  <!-- Results Screen -->
+  <div class="screen" id="resultsScreen">
+    <div class="results-screen" id="resultsContent"></div>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// CASE DATA
+// =====================================================
+const CASES = [
+  {
+    id:1,
+    badge:"NICU • DAY 2 OF LIFE",
+    title:"Preterm Infant with RDS",
+    vignette:"A 28-week gestational age male, 1.1 kg, was intubated at birth for respiratory distress syndrome. He is on pressure control ventilation. The nurse calls you to the bedside because the exhaled tidal volumes are suddenly reading much lower than the inspiratory volumes.",
+    settings:["Mode: PC-SIMV","PIP: 22 cmH₂O","PEEP: 6","Rate: 40","FiO₂: 0.45"],
+    monitorVals:[
+      {label:"PIP",val:"22",color:"green"},{label:"PEEP",val:"6",color:"cyan"},{label:"VTi",val:"7.2",color:"amber"},{label:"VTe",val:"4.1",color:"red"}
+    ],
+    waveforms:[
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_pc"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_leak"},
+      {label:"FLOW",color:"#ffb800",type:"flow_pc"}
+    ],
+    question:"What does the volume waveform suggest is happening?",
+    options:["Auto-PEEP from inadequate expiratory time","Air leak around the endotracheal tube","Normal variation in a preterm infant","Ventilator malfunction"],
+    correct:1,
+    explanation:"The volume scalar shows that the expiratory volume drops off suddenly and does not match the inspiratory volume — classic for an air leak around an uncuffed ETT, which is very common in preterm neonates. The difference between VTi (7.2 mL) and VTe (4.1 mL) confirms significant leak. Consider repositioning the ETT or upsizing if clinically appropriate."
+  },
+  {
+    id:2,
+    badge:"PICU • ASTHMA EXACERBATION",
+    title:"5-Year-Old in Status Asthmaticus",
+    vignette:"A 5-year-old, 18 kg girl with known severe persistent asthma presents with status asthmaticus unresponsive to maximal bronchodilator therapy. She was intubated 2 hours ago. The respiratory therapist points out that the flow waveform doesn't look right and SpO₂ is 91%.",
+    settings:["Mode: VC-SIMV","VT: 110 mL (6 mL/kg)","Rate: 18","PEEP: 5","I:E: 1:3.5","FiO₂: 0.6"],
+    monitorVals:[
+      {label:"PIP",val:"38",color:"red"},{label:"PEEP",val:"5",color:"cyan"},{label:"VT",val:"110",color:"green"},{label:"RR",val:"18",color:"amber"}
+    ],
+    waveforms:[
+      {label:"FLOW",color:"#ffb800",type:"flow_autoPEEP"},
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_vc_high"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_trap"}
+    ],
+    question:"The flow waveform shows that expiratory flow does not return to zero before the next breath. What is this finding and what is the most appropriate next step?",
+    options:[
+      "Auto-PEEP (intrinsic PEEP) — increase the expiratory time",
+      "Ineffective triggering — increase trigger sensitivity",
+      "Normal expiratory flow pattern in asthma",
+      "Double triggering — increase inspiratory time"
+    ],
+    correct:0,
+    explanation:"The expiratory flow not reaching zero baseline before the next breath indicates incomplete exhalation and air trapping (auto-PEEP/intrinsic PEEP). In status asthmaticus with severe obstruction, this is expected. The key intervention is to increase expiratory time by reducing the respiratory rate, shortening the I-time, or both. Continuing bronchodilators and permissive hypercapnia are also important strategies."
+  },
+  {
+    id:3,
+    badge:"PICU • POST-OPERATIVE",
+    title:"2-Year-Old Waking Up Post Cardiac Surgery",
+    vignette:"A 2-year-old, 12 kg boy is 6 hours post complete repair of tetralogy of Fallot. He is starting to wake from sedation and becoming increasingly agitated. You notice an unusual pattern on the flow waveform — breaths appear to be coming in pairs.",
+    settings:["Mode: PC-SIMV","PIP: 20 cmH₂O","PEEP: 5","Rate: 22","Ti: 0.6s","FiO₂: 0.35"],
+    monitorVals:[
+      {label:"PIP",val:"20",color:"green"},{label:"PEEP",val:"5",color:"cyan"},{label:"VT",val:"85",color:"amber"},{label:"RR",val:"36",color:"red"}
+    ],
+    waveforms:[
+      {label:"FLOW",color:"#00e0ff",type:"flow_double"},
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_double"},
+      {label:"VOLUME",color:"#ffb800",type:"volume_double"}
+    ],
+    question:"What type of patient-ventilator asynchrony is shown?",
+    options:[
+      "Auto-triggering from cardiac oscillations",
+      "Ineffective triggering",
+      "Double triggering — patient wants longer inspiration",
+      "Premature cycling with normal recovery"
+    ],
+    correct:2,
+    explanation:"Double triggering occurs when the patient's inspiratory effort exceeds the ventilator's set inspiratory time, causing a second breath to be triggered immediately after the first with no exhalation between them. This child is waking up with increasing respiratory drive and demanding longer inspiratory times than the 0.6s set on the ventilator. Interventions include increasing the inspiratory time, increasing sedation, or switching to a mode that allows the patient more control over breath termination."
+  },
+  {
+    id:4,
+    badge:"PICU • SEVERE PNEUMONIA",
+    title:"8-Month-Old with RSV Pneumonia",
+    vignette:"An 8-month-old, 8 kg girl with severe RSV pneumonia is on volume control ventilation. She appears to be working hard to breathe despite being on the ventilator. You examine the pressure waveform closely and notice a characteristic dip during inspiration.",
+    settings:["Mode: VC-AC","VT: 50 mL","Flow: 10 L/min","Rate: 30","PEEP: 6","FiO₂: 0.55"],
+    monitorVals:[
+      {label:"PIP",val:"28",color:"green"},{label:"PEEP",val:"6",color:"cyan"},{label:"VT",val:"50",color:"amber"},{label:"Flow",val:"10",color:"red"}
+    ],
+    waveforms:[
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_starve"},
+      {label:"FLOW",color:"#ffb800",type:"flow_vc_normal"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_normal"}
+    ],
+    question:"The pressure waveform shows a dip/scalloping during inspiration while the flow waveform appears unchanged. What is the diagnosis?",
+    options:[
+      "Ineffective triggering",
+      "Delayed cycling",
+      "Flow starvation — inadequate inspiratory flow delivery",
+      "Auto-PEEP causing trigger delay"
+    ],
+    correct:2,
+    explanation:"Flow starvation is identified by a dip or scalloping in the pressure waveform during inspiration WITHOUT corresponding changes in the flow scalar. The patient is generating negative intrathoracic pressure trying to pull more volume than the set flow allows. This is more common in volume control modes where flow is fixed. The fix is to increase the set flow rate, or switch to a pressure control mode where flow is variable and can meet patient demand."
+  },
+  {
+    id:5,
+    badge:"PICU • PEDIATRIC ARDS",
+    title:"10-Year-Old with ARDS",
+    vignette:"A 10-year-old, 35 kg boy with pneumococcal pneumonia has developed moderate pediatric ARDS (P/F ratio 120). He is on volume control ventilation with a lung protective strategy. You review the pressure-volume loop on the ventilator and notice an abnormal shape at the top of the curve.",
+    settings:["Mode: VC-AC","VT: 210 mL (6 mL/kg)","Rate: 22","PEEP: 10","Pplat: 30","FiO₂: 0.7"],
+    monitorVals:[
+      {label:"PIP",val:"36",color:"red"},{label:"Pplat",val:"30",color:"amber"},{label:"PEEP",val:"10",color:"cyan"},{label:"VT",val:"210",color:"green"}
+    ],
+    waveforms:[
+      {label:"P-V LOOP",color:"#b48eff",type:"pv_overdist"},
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_vc_overdist"},
+      {label:"FLOW",color:"#ffb800",type:"flow_vc_normal"}
+    ],
+    question:"The P-V loop shows a 'beaking' appearance at the upper portion. What does this indicate and what should you do?",
+    options:[
+      "Good lung recruitment — continue current settings",
+      "Overdistension — reduce tidal volume or peak pressure",
+      "Air trapping — increase expiratory time",
+      "Improved compliance — consider weaning"
+    ],
+    correct:1,
+    explanation:"'Beaking' at the upper right portion of the P-V loop represents the upper inflection point (UIP) where further increases in pressure produce minimal additional volume — the lung is overdistended. With a Pplat of 30 cmH₂O in a child with ARDS, this is concerning. Reduce the tidal volume, consider reducing PEEP if it's contributing, and accept permissive hypercapnia. The goal is to ventilate between the lower and upper inflection points."
+  },
+  {
+    id:6,
+    badge:"NICU • EXTREMELY PRETERM",
+    title:"26-Week Preterm on Day 7",
+    vignette:"A 26-week gestation male, 780g, has evolving chronic lung disease. He is on pressure control ventilation. You are asked to evaluate the pressure-volume loop, which appears notably different from what you'd expect in a healthy lung.",
+    settings:["Mode: PC-AC","PIP: 24 cmH₂O","PEEP: 7","Rate: 45","Ti: 0.35s","FiO₂: 0.55"],
+    monitorVals:[
+      {label:"PIP",val:"24",color:"green"},{label:"PEEP",val:"7",color:"cyan"},{label:"VT",val:"4.2",color:"red"},{label:"RR",val:"45",color:"amber"}
+    ],
+    waveforms:[
+      {label:"P-V LOOP",color:"#ff3355",type:"pv_lowcomp"},
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_pc"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_small"}
+    ],
+    question:"The P-V loop appears flat with a very shallow slope. What does this represent?",
+    options:[
+      "High airway resistance",
+      "Normal neonatal compliance",
+      "Severely decreased lung compliance",
+      "Overdistension of the lung"
+    ],
+    correct:2,
+    explanation:"The slope of the P-V loop represents lung compliance. A flat/shallow slope means that large pressure changes produce only small volume changes — severely decreased compliance. In this extremely preterm infant with evolving chronic lung disease, the stiff lungs require high pressures for minimal tidal volume delivery. Consider optimizing PEEP for recruitment, surfactant if acute, and minimizing volutrauma."
+  },
+  {
+    id:7,
+    badge:"PICU • NEUROLOGICAL",
+    title:"12-Year-Old with Traumatic Brain Injury",
+    vignette:"A 12-year-old, 45 kg girl with severe traumatic brain injury is heavily sedated and paralyzed. She is on volume control ventilation for tight CO₂ control. The attending asks you to assess the stress index from the pressure waveform during a volume-controlled breath.",
+    settings:["Mode: VC-AC","VT: 270 mL (6 mL/kg)","Rate: 16","PEEP: 8","FiO₂: 0.4"],
+    monitorVals:[
+      {label:"PIP",val:"25",color:"green"},{label:"PEEP",val:"8",color:"cyan"},{label:"VT",val:"270",color:"amber"},{label:"EtCO₂",val:"35",color:"green"}
+    ],
+    waveforms:[
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_si_high"},
+      {label:"FLOW",color:"#ffb800",type:"flow_vc_normal"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_normal"}
+    ],
+    question:"The inspiratory portion of the pressure waveform shows an upward-curving (convex) shape rather than a straight line. What stress index does this represent?",
+    options:[
+      "Stress index = 1 — normal compliance",
+      "Stress index < 1 — lung recruitment is occurring",
+      "Stress index > 1 — possible overdistension",
+      "Stress index is not applicable in this mode"
+    ],
+    correct:2,
+    explanation:"During volume-controlled ventilation with constant flow, the pressure should rise linearly if compliance is constant (stress index = 1). An upward-curving/convex shape (stress index > 1) indicates that compliance is worsening as volume increases — the lung is being overdistended. Consider reducing tidal volume or adjusting PEEP to find a more optimal ventilation point. A downward concavity (SI < 1) would indicate improving compliance with recruitment."
+  },
+  {
+    id:8,
+    badge:"PICU • RESPIRATORY FAILURE",
+    title:"4-Year-Old with Croup, Intubated",
+    vignette:"A 4-year-old, 16 kg boy was intubated for severe croup unresponsive to racemic epinephrine and dexamethasone. He is being weaned on pressure support ventilation. The bedside nurse notes that the ventilator alarm for low minute ventilation keeps going off despite the child appearing to be making breathing efforts.",
+    settings:["Mode: PS/CPAP","PS: 12 cmH₂O","PEEP: 5","Trigger: -2 cmH₂O","FiO₂: 0.30"],
+    monitorVals:[
+      {label:"PS",val:"12",color:"green"},{label:"PEEP",val:"5",color:"cyan"},{label:"RR",val:"12",color:"red"},{label:"SpO₂",val:"94%",color:"amber"}
+    ],
+    waveforms:[
+      {label:"FLOW",color:"#ffb800",type:"flow_ineffective"},
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_ineffective"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_ineffective"}
+    ],
+    question:"You see small deflections in the expiratory flow that are not followed by delivered breaths. What type of asynchrony is this, and how do you fix it?",
+    options:[
+      "Double triggering — increase inspiratory time",
+      "Ineffective triggering — increase trigger sensitivity or reduce auto-PEEP",
+      "Delayed cycling — reduce inspiratory time",
+      "Auto-triggering — decrease trigger sensitivity"
+    ],
+    correct:1,
+    explanation:"Ineffective triggering occurs when the patient makes an inspiratory effort (visible as a deflection from baseline expiratory flow) but the ventilator doesn't recognize it and no breath is delivered. The low minute ventilation alarm confirms that breaths are being missed. The fix is to increase trigger sensitivity (make it easier to trigger), or if auto-PEEP is present, address it by adding external PEEP to offset the intrinsic PEEP threshold the patient must overcome."
+  },
+  {
+    id:9,
+    badge:"NICU • TERM NEONATE",
+    title:"Term Neonate with Meconium Aspiration",
+    vignette:"A term male neonate, 3.5 kg, with meconium aspiration syndrome was intubated at 2 hours of life. He is on volume control ventilation. The respiratory therapist performs an inspiratory hold maneuver and shows you the resulting pressure waveform with a plateau clearly visible.",
+    settings:["Mode: VC-AC","VT: 21 mL (6 mL/kg)","Rate: 40","PEEP: 5","FiO₂: 0.60"],
+    monitorVals:[
+      {label:"PIP",val:"32",color:"red"},{label:"Pplat",val:"18",color:"amber"},{label:"PEEP",val:"5",color:"cyan"},{label:"VT",val:"21",color:"green"}
+    ],
+    waveforms:[
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_plateau"},
+      {label:"FLOW",color:"#ffb800",type:"flow_vc_normal"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_normal"}
+    ],
+    question:"The PIP is 32 and the Pplat is 18. The PIP–Pplat difference is 14 cmH₂O. What does this large gap primarily indicate?",
+    options:[
+      "Severely decreased lung compliance",
+      "High airway resistance (consistent with meconium obstruction)",
+      "Normal values for a neonate",
+      "Overdistension requiring immediate Vt reduction"
+    ],
+    correct:1,
+    explanation:"PIP includes both resistive and elastic pressure components. Pplat reflects only elastic (alveolar) pressure when there is no flow. A large PIP–Pplat difference (14 cmH₂O here) indicates that a significant portion of the peak pressure is being used to overcome airway resistance rather than alveolar distension. In meconium aspiration, this makes sense — the meconium causes significant airway obstruction with high resistance. The Pplat of 18 is reassuring that alveolar pressure is not dangerously high."
+  },
+  {
+    id:10,
+    badge:"PICU • BRONCHIOLITIS",
+    title:"3-Month-Old with Severe Bronchiolitis",
+    vignette:"A 3-month-old, 5.5 kg girl with RSV bronchiolitis was intubated for apneas and hypoxemia. She is on pressure control ventilation. You examine the flow-volume loop on the ventilator screen and notice a very abnormal expiratory pattern.",
+    settings:["Mode: PC-SIMV","PIP: 24 cmH₂O","PEEP: 6","Rate: 30","Ti: 0.45s","FiO₂: 0.50"],
+    monitorVals:[
+      {label:"PIP",val:"24",color:"green"},{label:"PEEP",val:"6",color:"cyan"},{label:"VT",val:"30",color:"amber"},{label:"RR",val:"30",color:"green"}
+    ],
+    waveforms:[
+      {label:"F-V LOOP",color:"#00e0ff",type:"fv_obstruct"},
+      {label:"FLOW",color:"#ffb800",type:"flow_obstruct"},
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_pc"}
+    ],
+    question:"The flow-volume loop shows a 'scooped out' concave expiratory limb with reduced peak expiratory flow. What does this indicate?",
+    options:[
+      "Normal infant flow-volume pattern",
+      "Restrictive lung disease",
+      "Obstructive airflow pattern consistent with lower airway disease",
+      "Air leak around the endotracheal tube"
+    ],
+    correct:2,
+    explanation:"The 'scooped out' (concave) appearance of the expiratory limb on the flow-volume loop, combined with reduced peak expiratory flow, is the classic pattern for obstructive lower airway disease. In this infant with RSV bronchiolitis, small airway inflammation, mucus, and edema cause significant expiratory flow limitation. If the expiratory limb also doesn't return to zero volume, air trapping is present. Management includes adequate expiratory time, suctioning, and bronchodilator trial."
+  },
+  {
+    id:11,
+    badge:"PICU • POST-EXTUBATION FAILURE",
+    title:"6-Year-Old Re-intubated for Laryngeal Edema",
+    vignette:"A 6-year-old, 22 kg boy was re-intubated after failed extubation due to post-extubation stridor. He is on pressure support ventilation and appears to be fighting the ventilator. On the pressure and flow scalars, you notice that at the end of each breath, there is a pressure spike and a period of zero flow during what should be the end of inspiration.",
+    settings:["Mode: PSV","PS: 14 cmH₂O","PEEP: 5","FiO₂: 0.35","Trigger: Flow"],
+    monitorVals:[
+      {label:"PS",val:"14",color:"green"},{label:"PEEP",val:"5",color:"cyan"},{label:"VT",val:"160",color:"amber"},{label:"RR",val:"28",color:"amber"}
+    ],
+    waveforms:[
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_delayed"},
+      {label:"FLOW",color:"#ffb800",type:"flow_delayed"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_normal"}
+    ],
+    question:"What cycling asynchrony is demonstrated by the pressure rise and zero-flow period at the end of inspiration?",
+    options:[
+      "Premature cycling",
+      "Delayed cycling — ventilator inspiratory time exceeds patient's",
+      "Flow starvation",
+      "Reverse triggering"
+    ],
+    correct:1,
+    explanation:"Delayed cycling occurs when the ventilator continues to deliver inspiratory flow after the patient wants to exhale. The patient's expiratory effort against ongoing inspiration causes a pressure spike at the end of the inspiratory phase, and a period of zero flow as the patient's expiratory muscles oppose the ventilator. The fix is to increase the expiratory trigger sensitivity (cycle off at a higher percentage of peak flow) or reduce the inspiratory time."
+  },
+  {
+    id:12,
+    badge:"NICU • CARDIAC",
+    title:"Neonate with Hypoplastic Left Heart Post-Norwood",
+    vignette:"A 5-day-old, 3.2 kg neonate is Day 2 post-Norwood Stage I palliation for HLHS. He is sedated but not paralyzed. The ventilator is delivering breaths rapidly — the displayed respiratory rate is 65/min despite the set rate being 30. The bedside nurse says the baby does not appear to be breathing that fast.",
+    settings:["Mode: PC-SIMV","PIP: 20 cmH₂O","PEEP: 4","Rate: 30 (set)","FiO₂: 0.40"],
+    monitorVals:[
+      {label:"PIP",val:"20",color:"green"},{label:"PEEP",val:"4",color:"cyan"},{label:"RR set",val:"30",color:"amber"},{label:"RR actual",val:"65",color:"red"}
+    ],
+    waveforms:[
+      {label:"PRESSURE",color:"#00ff88",type:"pressure_autotrig"},
+      {label:"FLOW",color:"#ffb800",type:"flow_autotrig"},
+      {label:"VOLUME",color:"#00e0ff",type:"volume_autotrig"}
+    ],
+    question:"The ventilator is delivering far more breaths than set, resembling tachypnea, but the patient is not making respiratory effort. What is the most likely cause?",
+    options:[
+      "The patient has tachypnea from metabolic acidosis",
+      "Double triggering from patient effort",
+      "Auto-triggering — likely from cardiac oscillations detected by the trigger",
+      "Normal response to a high set rate"
+    ],
+    correct:2,
+    explanation:"Auto-triggering (auto-cycling) occurs when the ventilator delivers breaths not initiated by the patient. In post-cardiac surgery neonates, the hyperdynamic cardiac output can cause oscillations in airway pressure or flow that the ventilator misinterprets as patient effort. Other causes include air leaks, condensation in tubing, or overly sensitive trigger settings. On the pressure scalar, note the absence of an initial negative deflection (patient effort dip) at the start of each breath. The fix is to decrease trigger sensitivity, check for leaks, and drain condensation."
+  }
+];
+
+// =====================================================
+// APP STATE
+// =====================================================
+let currentCase = 0;
+let score = 0;
+let answers = []; // stores {answered:bool, correct:bool}
+let animFrames = [];
+
+function startQuiz() {
+  currentCase = 0;
+  score = 0;
+  answers = CASES.map(() => ({answered:false, correct:false}));
+  showScreen('caseScreen');
+  renderCase();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateChips() {
+  document.getElementById('progressChip').textContent = `CASE ${currentCase+1} / ${CASES.length}`;
+  document.getElementById('scoreChip').textContent = `SCORE: ${score}`;
+}
+
+// =====================================================
+// RENDER CASE
+// =====================================================
+function renderCase() {
+  cancelAnimations();
+  const c = CASES[currentCase];
+  updateChips();
+
+  // Vignette
+  const vp = document.getElementById('vignettePanel');
+  vp.innerHTML = `
+    <div class="case-badge">${c.badge}</div>
+    <h2>${c.title}</h2>
+    <p>${c.vignette}</p>
+    <div class="vent-settings">
+      ${c.settings.map(s => `<span class="setting-pill">${s}</span>`).join('')}
+    </div>
+  `;
+
+  // Monitor values
+  const mv = document.getElementById('monitorValues');
+  mv.innerHTML = c.monitorVals.map(v => `
+    <div class="mv-item">
+      <div class="mv-label">${v.label}</div>
+      <div class="mv-val mv-${v.color}">${v.val}</div>
+    </div>
+  `).join('');
+
+  // Waveforms
+  const wp = document.getElementById('waveformPanel');
+  wp.innerHTML = c.waveforms.map((w,i) => `
+    <div class="wf-row">
+      <div class="wf-row-label" style="color:${w.color}">${w.label}</div>
+      <canvas class="wf-canvas" id="wfCanvas${i}"></canvas>
+    </div>
+  `).join('');
+
+  // Start waveform animations
+  setTimeout(() => {
+    c.waveforms.forEach((w,i) => {
+      const canvas = document.getElementById(`wfCanvas${i}`);
+      if (canvas) startWaveform(canvas, w.type, w.color);
+    });
+  }, 100);
+
+  // Question
+  const qp = document.getElementById('questionPanel');
+  const letters = ['A','B','C','D'];
+  qp.innerHTML = `
+    <div class="q-label">QUESTION</div>
+    <div class="q-text">${c.question}</div>
+    <div class="options" id="optionsDiv">
+      ${c.options.map((o,i) => `
+        <button class="opt-btn" onclick="selectAnswer(${i})">
+          <span class="opt-letter">${letters[i]}</span>
+          <span>${o}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="feedback" id="feedbackDiv"></div>
+  `;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function selectAnswer(idx) {
+  const c = CASES[currentCase];
+  if (answers[currentCase].answered) return;
+  answers[currentCase].answered = true;
+
+  const btns = document.querySelectorAll('#optionsDiv .opt-btn');
+  btns.forEach((b,i) => {
+    b.classList.add('locked');
+    if (i === c.correct) b.classList.add('correct');
+    else if (i === idx && idx !== c.correct) b.classList.add('wrong');
+    else b.classList.add('dimmed');
+  });
+
+  const fb = document.getElementById('feedbackDiv');
+  if (idx === c.correct) {
+    score++;
+    answers[currentCase].correct = true;
+    fb.className = 'feedback show correct-fb';
+    fb.innerHTML = `<strong>✓ Correct!</strong> ${c.explanation}`;
+  } else {
+    fb.className = 'feedback show wrong-fb';
+    fb.innerHTML = `<strong>✗ Not quite.</strong> ${c.explanation}`;
+  }
+
+  updateChips();
+
+  // Next button
+  const nextLabel = currentCase < CASES.length - 1 ? 'NEXT CASE →' : 'SEE RESULTS →';
+  fb.innerHTML += `<br><button class="next-btn" onclick="nextCase()">${nextLabel}</button>`;
+}
+
+function nextCase() {
+  if (currentCase < CASES.length - 1) {
+    currentCase++;
+    renderCase();
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  cancelAnimations();
+  showScreen('resultsScreen');
+  const pct = Math.round(score / CASES.length * 100);
+  let msg = '';
+  if (pct >= 90) msg = 'Outstanding! You have excellent command of ventilator waveform interpretation. Ready for the bedside.';
+  else if (pct >= 70) msg = 'Solid performance! Review the cases you missed and you\'ll master these patterns in no time.';
+  else if (pct >= 50) msg = 'Good start. Spend more time with each waveform type — the patterns will become second nature with practice.';
+  else msg = 'Keep studying! Ventilator waveforms take time to master. Review the scalars and loops modules, then retry.';
+
+  document.getElementById('resultsContent').innerHTML = `
+    <div class="results-label">FINAL SCORE</div>
+    <div class="results-score">${score}/${CASES.length}</div>
+    <div class="results-label" style="margin-top:0.5rem;color:var(--green)">${pct}%</div>
+    <p class="results-msg">${msg}</p>
+    <div class="results-breakdown">
+      ${answers.map((a,i) => `<div class="rb-dot ${a.correct?'rb-correct':'rb-wrong'}" title="Case ${i+1}">${i+1}</div>`).join('')}
+    </div>
+    <button class="start-btn" onclick="startQuiz()">RESTART SIMULATION</button>
+  `;
+}
+
+// =====================================================
+// WAVEFORM RENDERING ENGINE
+// =====================================================
+function cancelAnimations() {
+  animFrames.forEach(id => cancelAnimationFrame(id));
+  animFrames = [];
+}
+
+function startWaveform(canvas, type, color) {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+  const W = rect.width;
+  const H = rect.height;
+
+  const generator = getWaveformGenerator(type, W, H);
+  let x = 0;
+  const speed = 1.2;
+  const trailLength = W;
+
+  // Pre-generate full waveform data
+  const data = [];
+  for (let i = 0; i < W * 3; i++) {
+    data.push(generator(i));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = '#0d1a24';
+    ctx.lineWidth = 0.5;
+    for (let gy = 0; gy < H; gy += H/5) {
+      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+    }
+    for (let gx = 0; gx < W; gx += W/8) {
+      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
+    }
+
+    // Midline for flow
+    if (type.includes('flow') || type.includes('fv')) {
+      ctx.strokeStyle = '#15232e';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Baseline for pressure/volume
+    if (type.includes('pressure') || type.includes('volume')) {
+      ctx.strokeStyle = '#15232e';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([4,4]);
+      const bl = type.includes('volume') ? H * 0.85 : H * 0.82;
+      ctx.beginPath(); ctx.moveTo(0, bl); ctx.lineTo(W, bl); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Draw waveform
+    const offset = Math.floor(x) % (data.length / 2);
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.8;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    let started = false;
+    for (let px = 0; px < W; px++) {
+      const di = (offset + px) % data.length;
+      const y = data[di];
+      if (!started) { ctx.moveTo(px, y); started = true; }
+      else ctx.lineTo(px, y);
+    }
+    ctx.stroke();
+
+    // Glow effect
+    ctx.strokeStyle = color + '30';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    started = false;
+    for (let px = 0; px < W; px++) {
+      const di = (offset + px) % data.length;
+      const y = data[di];
+      if (!started) { ctx.moveTo(px, y); started = true; }
+      else ctx.lineTo(px, y);
+    }
+    ctx.stroke();
+
+    // Sweep line
+    const sweepX = W - 2;
+    ctx.strokeStyle = color + '60';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sweepX, 0); ctx.lineTo(sweepX, H); ctx.stroke();
+
+    x += speed;
+    const id = requestAnimationFrame(draw);
+    animFrames.push(id);
+  }
+  draw();
+}
+
+// =====================================================
+// WAVEFORM GENERATORS
+// =====================================================
+function getWaveformGenerator(type, W, H) {
+  const breathW = W / 3.5; // pixels per breath cycle
+
+  switch(type) {
+    // ---- PRESSURE ----
+    case 'pressure_pc': return pressurePC(H, breathW);
+    case 'pressure_vc_high': return pressureVC(H, breathW, 0.22);
+    case 'pressure_vc_overdist': return pressureVC(H, breathW, 0.22);
+    case 'pressure_plateau': return pressurePlateau(H, breathW);
+    case 'pressure_starve': return pressureStarve(H, breathW);
+    case 'pressure_double': return pressureDouble(H, breathW);
+    case 'pressure_ineffective': return pressureIneffective(H, breathW);
+    case 'pressure_delayed': return pressureDelayed(H, breathW);
+    case 'pressure_autotrig': return pressureAutoTrig(H, breathW);
+    case 'pressure_si_high': return pressureSIHigh(H, breathW);
+
+    // ---- FLOW ----
+    case 'flow_pc': return flowPC(H, breathW);
+    case 'flow_vc_normal': return flowVC(H, breathW);
+    case 'flow_autoPEEP': return flowAutoPEEP(H, breathW);
+    case 'flow_double': return flowDouble(H, breathW);
+    case 'flow_ineffective': return flowIneffective(H, breathW);
+    case 'flow_obstruct': return flowObstruct(H, breathW);
+    case 'flow_delayed': return flowDelayed(H, breathW);
+    case 'flow_autotrig': return flowAutoTrig(H, breathW);
+
+    // ---- VOLUME ----
+    case 'volume_normal': return volumeNormal(H, breathW);
+    case 'volume_leak': return volumeLeak(H, breathW);
+    case 'volume_trap': return volumeTrap(H, breathW);
+    case 'volume_double': return volumeDouble(H, breathW);
+    case 'volume_small': return volumeSmall(H, breathW);
+    case 'volume_ineffective': return volumeIneffective(H, breathW);
+    case 'volume_autotrig': return volumeAutoTrig(H, breathW);
+
+    // ---- LOOPS (rendered as time-series approximation) ----
+    case 'pv_overdist': return pvOverdist(H, breathW);
+    case 'pv_lowcomp': return pvLowComp(H, breathW);
+    case 'fv_obstruct': return fvObstruct(H, breathW);
+
+    default: return (x) => H/2;
+  }
+}
+
+// Helper: clamp
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+// Helper: phase within breath
+function breathPhase(x, bw) { return (x % bw) / bw; }
+
+// ===== PRESSURE GENERATORS =====
+function pressurePC(H, bw) {
+  const base = H * 0.82, peak = H * 0.15, peep = H * 0.75;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.02) return base - (base - peep) * (p / 0.02); // rise to PEEP
+    if (p < 0.05) return peep - (peep - peak) * ((p - 0.02) / 0.03); // rise to PIP
+    if (p < 0.45) return peak; // hold
+    if (p < 0.48) return peak + (base - peak) * ((p - 0.45) / 0.03); // drop
+    return base; // expiratory baseline
+  };
+}
+
+function pressureVC(H, bw, peakFrac) {
+  const base = H * 0.82, peak = H * peakFrac;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.03) return base;
+    if (p < 0.45) return base - (base - peak) * ((p - 0.03) / 0.42); // ascending
+    if (p < 0.48) return peak + (base - peak) * ((p - 0.45) / 0.03);
+    return base;
+  };
+}
+
+function pressurePlateau(H, bw) {
+  const base = H * 0.82, peak = H * 0.12, plat = H * 0.35;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.03) return base;
+    if (p < 0.3) return base - (base - peak) * ((p - 0.03) / 0.27);
+    if (p < 0.33) return peak + (plat - peak) * ((p - 0.3) / 0.03); // drop to plateau
+    if (p < 0.55) return plat; // hold plateau
+    if (p < 0.58) return plat + (base - plat) * ((p - 0.55) / 0.03);
+    return base;
+  };
+}
+
+function pressureStarve(H, bw) {
+  const base = H * 0.82, peak = H * 0.2;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.03) return base;
+    if (p < 0.15) return base - (base - peak * 1.5) * (p - 0.03) / 0.12;
+    // dip!
+    if (p < 0.22) return peak * 1.5 + H * 0.12 * Math.sin((p - 0.15) / 0.07 * Math.PI);
+    if (p < 0.45) return base - (base - peak) * ((p - 0.03) / 0.42);
+    if (p < 0.48) return peak + (base - peak) * ((p - 0.45) / 0.03);
+    return base;
+  };
+}
+
+function pressureDouble(H, bw) {
+  const base = H * 0.82, peak = H * 0.15;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    // First breath
+    if (p < 0.03) return base;
+    if (p < 0.05) return base - (base - peak) * ((p - 0.03) / 0.02);
+    if (p < 0.2) return peak;
+    if (p < 0.22) return peak + (base - peak) * 0.3; // brief dip
+    // Second breath immediately
+    if (p < 0.24) return peak;
+    if (p < 0.4) return peak;
+    if (p < 0.43) return peak + (base - peak) * ((p - 0.4) / 0.03);
+    return base;
+  };
+}
+
+function pressureIneffective(H, bw) {
+  const base = H * 0.82, peak = H * 0.15;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    // Delivered breath
+    if (p < 0.03) return base;
+    if (p < 0.05) return base - (base - peak) * ((p - 0.03) / 0.02);
+    if (p < 0.35) return peak;
+    if (p < 0.38) return peak + (base - peak) * ((p - 0.35) / 0.03);
+    // Failed attempt - tiny dip
+    if (p > 0.6 && p < 0.68) return base - H * 0.04 * Math.sin((p - 0.6) / 0.08 * Math.PI);
+    return base;
+  };
+}
+
+function pressureDelayed(H, bw) {
+  const base = H * 0.82, peak = H * 0.15;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.03) return base;
+    if (p < 0.05) return base - (base - peak) * ((p - 0.03) / 0.02);
+    if (p < 0.35) return peak;
+    // Pressure spike at end of inspiration
+    if (p < 0.42) return peak - H * 0.08 * ((p - 0.35) / 0.07);
+    if (p < 0.45) return peak - H * 0.08 + (base - peak + H * 0.08) * ((p - 0.42) / 0.03);
+    return base;
+  };
+}
+
+function pressureAutoTrig(H, bw) {
+  const shortBw = bw * 0.5;
+  const base = H * 0.82, peak = H * 0.2;
+  return (x) => {
+    const p = (x % shortBw) / shortBw;
+    if (p < 0.04) return base;
+    if (p < 0.08) return base - (base - peak) * ((p - 0.04) / 0.04);
+    if (p < 0.45) return peak;
+    if (p < 0.5) return peak + (base - peak) * ((p - 0.45) / 0.05);
+    return base;
+  };
+}
+
+function pressureSIHigh(H, bw) {
+  const base = H * 0.82, peak = H * 0.18;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.03) return base;
+    if (p < 0.45) {
+      const t = (p - 0.03) / 0.42;
+      // Convex upward curve (SI > 1): slow then fast
+      return base - (base - peak) * Math.pow(t, 1.8);
+    }
+    if (p < 0.48) return peak + (base - peak) * ((p - 0.45) / 0.03);
+    return base;
+  };
+}
+
+// ===== FLOW GENERATORS =====
+function flowPC(H, bw) {
+  const mid = H / 2, amp = H * 0.35;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.02) return mid;
+    // Decelerating inspiratory
+    if (p < 0.4) {
+      const t = (p - 0.02) / 0.38;
+      return mid - amp * Math.exp(-t * 3);
+    }
+    if (p < 0.42) return mid;
+    // Expiratory
+    if (p < 0.85) {
+      const t = (p - 0.42) / 0.43;
+      return mid + amp * 0.7 * Math.exp(-t * 3);
+    }
+    return mid;
+  };
+}
+
+function flowVC(H, bw) {
+  const mid = H / 2, amp = H * 0.32;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.02) return mid;
+    if (p < 0.04) return mid - amp; // instant rise
+    if (p < 0.4) return mid - amp; // constant
+    if (p < 0.42) return mid; // transition
+    if (p < 0.85) {
+      const t = (p - 0.42) / 0.43;
+      return mid + amp * 0.7 * Math.exp(-t * 3);
+    }
+    return mid;
+  };
+}
+
+function flowAutoPEEP(H, bw) {
+  const mid = H / 2, amp = H * 0.32;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.02) return mid;
+    if (p < 0.04) return mid - amp;
+    if (p < 0.4) return mid - amp;
+    if (p < 0.42) return mid;
+    if (p < 0.95) {
+      const t = (p - 0.42) / 0.53;
+      // Doesn't return to zero!
+      return mid + amp * 0.6 * Math.exp(-t * 2);
+    }
+    return mid + amp * 0.08; // still above baseline
+  };
+}
+
+function flowDouble(H, bw) {
+  const mid = H / 2, amp = H * 0.3;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    // First breath
+    if (p < 0.02) return mid;
+    if (p < 0.04) return mid - amp;
+    if (p < 0.2) return mid - amp * Math.exp(-((p-0.04)/0.16)*2);
+    if (p < 0.22) return mid;
+    // Second breath immediately
+    if (p < 0.24) return mid - amp;
+    if (p < 0.4) return mid - amp * Math.exp(-((p-0.24)/0.16)*2);
+    if (p < 0.42) return mid;
+    // Long expiration
+    if (p < 0.9) {
+      const t = (p - 0.42) / 0.48;
+      return mid + amp * 0.8 * Math.exp(-t * 2.5);
+    }
+    return mid;
+  };
+}
+
+function flowIneffective(H, bw) {
+  const mid = H / 2, amp = H * 0.3;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    // Delivered breath
+    if (p < 0.02) return mid;
+    if (p < 0.05) return mid - amp * ((p-0.02)/0.03);
+    if (p < 0.3) return mid - amp * Math.exp(-((p-0.05)/0.25)*2);
+    if (p < 0.32) return mid;
+    if (p < 0.55) {
+      const t = (p - 0.32) / 0.23;
+      return mid + amp * 0.6 * Math.exp(-t * 3);
+    }
+    // Ineffective effort — small deflection
+    if (p > 0.6 && p < 0.72) {
+      return mid + H * 0.06 * Math.sin((p - 0.6) / 0.12 * Math.PI);
+    }
+    return mid;
+  };
+}
+
+function flowObstruct(H, bw) {
+  const mid = H / 2, amp = H * 0.3;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.02) return mid;
+    if (p < 0.35) {
+      const t = (p - 0.02) / 0.33;
+      return mid - amp * Math.exp(-t * 2.5);
+    }
+    if (p < 0.37) return mid;
+    // Obstructed expiratory — low peak, very slow return
+    if (p < 0.95) {
+      const t = (p - 0.37) / 0.58;
+      return mid + amp * 0.35 * Math.exp(-t * 1.2);
+    }
+    return mid + amp * 0.03;
+  };
+}
+
+function flowDelayed(H, bw) {
+  const mid = H / 2, amp = H * 0.3;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.02) return mid;
+    if (p < 0.3) {
+      const t = (p - 0.02) / 0.28;
+      return mid - amp * Math.exp(-t * 2.5);
+    }
+    // Zero flow period (patient fighting)
+    if (p < 0.42) return mid;
+    if (p < 0.44) return mid;
+    if (p < 0.85) {
+      const t = (p - 0.44) / 0.41;
+      return mid + amp * 0.6 * Math.exp(-t * 3);
+    }
+    return mid;
+  };
+}
+
+function flowAutoTrig(H, bw) {
+  const shortBw = bw * 0.5;
+  const mid = H / 2, amp = H * 0.28;
+  return (x) => {
+    const p = (x % shortBw) / shortBw;
+    if (p < 0.04) return mid;
+    if (p < 0.08) return mid - amp;
+    if (p < 0.35) return mid - amp * Math.exp(-((p-0.08)/0.27)*2);
+    if (p < 0.4) return mid;
+    if (p < 0.85) {
+      const t = (p - 0.4) / 0.45;
+      return mid + amp * 0.5 * Math.exp(-t * 3);
+    }
+    return mid;
+  };
+}
+
+// ===== VOLUME GENERATORS =====
+function volumeNormal(H, bw) {
+  const base = H * 0.85, peak = H * 0.15;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.4) return base - (base - peak) * (p / 0.4);
+    if (p < 0.42) return peak;
+    if (p < 0.85) return peak + (base - peak) * ((p - 0.42) / 0.43);
+    return base;
+  };
+}
+
+function volumeLeak(H, bw) {
+  const base = H * 0.85, peak = H * 0.15;
+  return (x) => {
+    const cycle = Math.floor(x / bw) % 3;
+    const p = breathPhase(x, bw);
+    if (cycle === 1 || cycle === 2) {
+      // Leak breath
+      if (p < 0.4) return base - (base - peak) * (p / 0.4);
+      if (p < 0.42) return peak;
+      if (p < 0.6) return peak + (base * 0.5 - peak) * ((p - 0.42) / 0.18);
+      return base * 0.5 + (base - base * 0.5) * ((p - 0.6) / 0.4); // doesn't return
+    }
+    // Normal breath
+    if (p < 0.4) return base - (base - peak) * (p / 0.4);
+    if (p < 0.42) return peak;
+    if (p < 0.85) return peak + (base - peak) * ((p - 0.42) / 0.43);
+    return base;
+  };
+}
+
+function volumeTrap(H, bw) {
+  const base = H * 0.85, peak = H * 0.15;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    const trapped = H * 0.06; // baseline shifts up
+    if (p < 0.4) return (base - trapped) - (base - trapped - peak) * (p / 0.4);
+    if (p < 0.42) return peak;
+    if (p < 0.9) return peak + (base - trapped - peak) * ((p - 0.42) / 0.48);
+    return base - trapped;
+  };
+}
+
+function volumeDouble(H, bw) {
+  const base = H * 0.85, peak = H * 0.15;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.2) return base - (base - H*0.4) * (p / 0.2);
+    if (p < 0.22) return H * 0.4;
+    if (p < 0.4) return H * 0.4 - (H*0.4 - peak) * ((p-0.22)/0.18);
+    if (p < 0.42) return peak;
+    if (p < 0.85) return peak + (base - peak) * ((p - 0.42) / 0.43);
+    return base;
+  };
+}
+
+function volumeSmall(H, bw) {
+  const base = H * 0.85, peak = H * 0.55;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.4) return base - (base - peak) * (p / 0.4);
+    if (p < 0.42) return peak;
+    if (p < 0.85) return peak + (base - peak) * ((p - 0.42) / 0.43);
+    return base;
+  };
+}
+
+function volumeIneffective(H, bw) {
+  return volumeNormal(H, bw); // looks normal for delivered breaths
+}
+
+function volumeAutoTrig(H, bw) {
+  const shortBw = bw * 0.5;
+  const base = H * 0.85, peak = H * 0.25;
+  return (x) => {
+    const p = (x % shortBw) / shortBw;
+    if (p < 0.35) return base - (base - peak) * (p / 0.35);
+    if (p < 0.38) return peak;
+    if (p < 0.85) return peak + (base - peak) * ((p - 0.38) / 0.47);
+    return base;
+  };
+}
+
+// ===== LOOP-LIKE GENERATORS (rendered as time series) =====
+function pvOverdist(H, bw) {
+  // PV loop as time: pressure on x mapped to time, volume as y
+  const base = H * 0.85, peak = H * 0.12;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    // Inspiration: sigmoidal rise with beaking
+    if (p < 0.45) {
+      const t = p / 0.45;
+      if (t < 0.15) return base - (base - H*0.6) * (t / 0.15); // flat initial
+      if (t < 0.7) return H*0.6 - (H*0.6 - peak) * ((t-0.15)/0.55); // steep
+      // Beaking: volume plateaus
+      return peak + H * 0.02 * ((t - 0.7) / 0.3);
+    }
+    if (p < 0.48) return peak + H * 0.02;
+    // Expiration
+    if (p < 0.9) {
+      const t = (p - 0.48) / 0.42;
+      return (peak + H*0.02) + (base - peak - H*0.02) * t;
+    }
+    return base;
+  };
+}
+
+function pvLowComp(H, bw) {
+  const base = H * 0.85, peak = H * 0.55;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    if (p < 0.45) return base - (base - peak) * (p / 0.45);
+    if (p < 0.48) return peak;
+    if (p < 0.9) return peak + (base - peak) * ((p - 0.48) / 0.42);
+    return base;
+  };
+}
+
+function fvObstruct(H, bw) {
+  const mid = H / 2, amp = H * 0.32;
+  return (x) => {
+    const p = breathPhase(x, bw);
+    // Inspiration (normal-ish)
+    if (p < 0.02) return mid;
+    if (p < 0.35) {
+      const t = (p - 0.02) / 0.33;
+      return mid - amp * Math.exp(-t * 2);
+    }
+    if (p < 0.38) return mid;
+    // Scooped out expiration
+    if (p < 0.92) {
+      const t = (p - 0.38) / 0.54;
+      // Concave curve
+      return mid + amp * 0.3 * Math.pow(1 - t, 0.4);
+    }
+    return mid + amp * 0.02;
+  };
+}
+
+// =====================================================
+// INIT
+// =====================================================
+updateChips();
+</script>
+</body>
+</html>

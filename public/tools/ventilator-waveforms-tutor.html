@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ventilator Waveforms Interactive Tutor</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #111827;
+    --bg-card: #1a2235;
+    --bg-card-hover: #1f2a40;
+    --accent-green: #00e5a0;
+    --accent-green-dim: #00e5a033;
+    --accent-cyan: #00d4ff;
+    --accent-amber: #ffbe0b;
+    --accent-red: #ff4757;
+    --accent-purple: #a78bfa;
+    --text-primary: #e8edf5;
+    --text-secondary: #8899b4;
+    --text-dim: #4a5a74;
+    --border: #1e2d45;
+    --grid-line: #1a2540;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Source Serif 4', Georgia, serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 3px; }
+
+  /* Header */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10, 14, 23, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 0.85rem;
+    color: var(--accent-green);
+    letter-spacing: 2px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .header-logo .pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,160,0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(0,229,160,0); }
+  }
+
+  /* Nav */
+  .nav-tabs {
+    display: flex; gap: 0.25rem;
+    background: var(--bg-secondary);
+    border-radius: 8px; padding: 3px;
+  }
+  .nav-tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border: none; border-radius: 6px;
+    background: transparent; color: var(--text-secondary);
+    cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--text-primary); }
+  .nav-tab.active {
+    background: var(--accent-green);
+    color: var(--bg-primary);
+  }
+
+  /* Main */
+  .main { padding-top: 70px; min-height: 100vh; }
+
+  /* Hero */
+  .hero {
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,229,160,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: 2.5rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.75rem;
+  }
+  .hero p {
+    color: var(--text-secondary); max-width: 600px;
+    margin: 0 auto; font-size: 1.05rem;
+  }
+
+  /* Section */
+  .section {
+    max-width: 1100px; margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: none;
+  }
+  .section.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 600;
+    color: var(--accent-green);
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .section h2 {
+    font-size: 1.8rem; font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  .section .desc {
+    color: var(--text-secondary); font-size: 1rem;
+    max-width: 700px; margin-bottom: 2rem;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem; margin-bottom: 2rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-green);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,229,160,0.08);
+  }
+  .card-icon {
+    font-size: 1.5rem; margin-bottom: 0.75rem;
+  }
+  .card h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem; font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .card p {
+    font-size: 0.88rem; color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .card .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.75rem;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .tag-scalar { background: rgba(0,212,255,0.15); color: var(--accent-cyan); }
+  .tag-loop { background: rgba(167,139,250,0.15); color: var(--accent-purple); }
+  .tag-async { background: rgba(255,190,11,0.15); color: var(--accent-amber); }
+  .tag-concept { background: rgba(0,229,160,0.15); color: var(--accent-green); }
+
+  /* Waveform display */
+  .waveform-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .waveform-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem;
+  }
+  .waveform-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; font-weight: 600;
+    color: var(--accent-green);
+  }
+  .waveform-controls {
+    display: flex; gap: 0.5rem;
+  }
+  .wf-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 500;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .wf-btn:hover, .wf-btn.active {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+  }
+
+  .waveform-svg {
+    width: 100%; height: 200px;
+    border-radius: 8px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+  }
+
+  /* Annotation callout */
+  .annotation {
+    display: flex; gap: 1rem;
+    background: rgba(0,229,160,0.05);
+    border-left: 3px solid var(--accent-green);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+  .annotation-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .annotation p {
+    font-size: 0.88rem; color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .annotation strong { color: var(--text-primary); }
+
+  /* Interactive lesson panel */
+  .lesson-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .lesson-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .lesson-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 700;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--accent-green);
+    color: var(--bg-primary);
+  }
+  .lesson-header h3 {
+    font-size: 1.05rem; font-weight: 600;
+  }
+  .lesson-body {
+    padding: 1.5rem;
+  }
+  .lesson-body p {
+    font-size: 0.92rem; color: var(--text-secondary);
+    margin-bottom: 1rem; line-height: 1.7;
+  }
+
+  /* Key points */
+  .key-points {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.75rem; margin: 1rem 0;
+  }
+  .key-point {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+  }
+  .key-point .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    flex-shrink: 0; margin-top: 0.5rem;
+  }
+  .key-point span {
+    font-size: 0.82rem; color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Quiz */
+  .quiz-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .quiz-question {
+    font-size: 1rem; font-weight: 600;
+    margin-bottom: 1.25rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--accent-amber);
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-option {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer; transition: all 0.2s;
+    text-align: left; width: 100%;
+  }
+  .quiz-option:hover {
+    border-color: var(--accent-cyan);
+    color: var(--text-primary);
+  }
+  .quiz-option.correct {
+    border-color: var(--accent-green);
+    background: rgba(0,229,160,0.1);
+    color: var(--accent-green);
+  }
+  .quiz-option.wrong {
+    border-color: var(--accent-red);
+    background: rgba(255,71,87,0.1);
+    color: var(--accent-red);
+  }
+  .quiz-option.disabled { pointer-events: none; }
+  .quiz-feedback {
+    margin-top: 1rem; padding: 0.75rem 1rem;
+    border-radius: 8px; font-size: 0.88rem;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct-fb {
+    background: rgba(0,229,160,0.1);
+    border: 1px solid rgba(0,229,160,0.3);
+    color: var(--accent-green);
+  }
+  .quiz-feedback.wrong-fb {
+    background: rgba(255,71,87,0.1);
+    border: 1px solid rgba(255,71,87,0.3);
+    color: var(--accent-red);
+  }
+
+  /* Comparison table */
+  .comp-table {
+    width: 100%; border-collapse: collapse;
+    margin: 1rem 0; font-size: 0.85rem;
+  }
+  .comp-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent-green);
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border);
+    text-align: left;
+  }
+  .comp-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .comp-table tr:hover td { background: rgba(0,229,160,0.03); }
+
+  /* Breath variables diagram */
+  .breath-flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1rem; padding: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .breath-step {
+    text-align: center;
+    padding: 1rem 1.25rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-width: 140px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .breath-step:hover {
+    border-color: var(--accent-green);
+    transform: scale(1.03);
+  }
+  .breath-step .step-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    color: var(--accent-cyan);
+    text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+  }
+  .breath-step .step-value {
+    font-size: 0.9rem; font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+  .breath-step .step-desc {
+    font-size: 0.75rem; color: var(--text-dim);
+  }
+  .arrow-right {
+    font-size: 1.5rem; color: var(--text-dim);
+  }
+
+  /* Progress */
+  .progress-bar {
+    position: fixed; top: 56px; left: 0; right: 0;
+    height: 2px; background: var(--bg-secondary);
+    z-index: 99;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header { padding: 0.6rem 1rem; }
+    .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .hero h1 { font-size: 1.8rem; }
+    .section { padding: 1.5rem 1rem 3rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .key-points { grid-template-columns: 1fr; }
+    .breath-flow { flex-direction: column; }
+    .arrow-right { transform: rotate(90deg); }
+  }
+
+  /* Tooltip on waveform */
+  .wf-tooltip {
+    position: absolute;
+    background: var(--bg-card);
+    border: 1px solid var(--accent-green);
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent-green);
+    pointer-events: none;
+    white-space: nowrap;
+    display: none;
+    z-index: 50;
+  }
+
+  /* Animated waveform line */
+  .wf-path {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .wf-path-anim {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawLine 2s ease forwards;
+  }
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .grid-line {
+    stroke: var(--grid-line);
+    stroke-width: 0.5;
+  }
+  .axis-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: var(--text-dim);
+  }
+  .wf-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    fill: var(--accent-green);
+  }
+  .wf-label-cyan { fill: var(--accent-cyan); }
+  .wf-label-amber { fill: var(--accent-amber); }
+  .wf-label-red { fill: var(--accent-red); }
+
+  .wf-area {
+    opacity: 0.08;
+  }
+
+  /* Hotspot circles on waveforms */
+  .hotspot {
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .hotspot:hover { r: 7; }
+  .hotspot-ring {
+    fill: none;
+    stroke-width: 1.5;
+    opacity: 0.5;
+    animation: ringPulse 2s infinite;
+  }
+  @keyframes ringPulse {
+    0%, 100% { r: 6; opacity: 0.5; }
+    50% { r: 10; opacity: 0; }
+  }
+
+  /* Detail panel */
+  .detail-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10,14,23,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 200; display: none;
+    align-items: center; justify-content: center;
+    padding: 2rem;
+  }
+  .detail-overlay.show { display: flex; }
+  .detail-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 650px; width: 100%;
+    max-height: 80vh; overflow-y: auto;
+    padding: 2rem;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .detail-close {
+    float: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .detail-close:hover { border-color: var(--accent-red); color: var(--accent-red); }
+  .detail-panel h3 {
+    font-size: 1.3rem; margin-bottom: 1rem;
+    margin-top: 0.5rem;
+  }
+  .detail-panel p {
+    font-size: 0.9rem; color: var(--text-secondary);
+    margin-bottom: 0.75rem; line-height: 1.7;
+  }
+
+  .score-bar {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+  .score-bar .score-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .score-bar .score-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--accent-green);
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <div class="pulse"></div>
+    Vent Waveforms Tutor
+  </div>
+  <nav class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" data-tab="overview">Overview</button>
+    <button class="nav-tab" data-tab="scalars">Scalars</button>
+    <button class="nav-tab" data-tab="loops">Loops</button>
+    <button class="nav-tab" data-tab="async">Asynchrony</button>
+    <button class="nav-tab" data-tab="quiz">Quiz</button>
+  </nav>
+</header>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<main class="main">
+
+  <!-- ========== OVERVIEW ========== -->
+  <section class="section active" id="sec-overview">
+    <div class="hero">
+      <h1>Ventilator Waveforms</h1>
+      <p>An interactive guide to reading ventilator graphics — scalars, loops, and patient-ventilator synchrony for the pediatric & neonatal clinician.</p>
+    </div>
+
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num">1</div>
+        <h3>How a Mechanical Breath Works</h3>
+      </div>
+      <div class="lesson-body">
+        <p>Every mechanical breath is defined by three variables: how it <strong>starts</strong> (trigger), how gas is <strong>delivered</strong> (target), and how it <strong>stops</strong> (cycle). Understanding this framework is the foundation for reading waveforms.</p>
+
+        <div class="breath-flow">
+          <div class="breath-step">
+            <div class="step-label">Trigger</div>
+            <div class="step-value">How it starts</div>
+            <div class="step-desc">Patient effort or machine timer</div>
+          </div>
+          <div class="arrow-right">→</div>
+          <div class="breath-step">
+            <div class="step-label">Target</div>
+            <div class="step-value">How it's delivered</div>
+            <div class="step-desc">Flow-targeted or pressure-targeted</div>
+          </div>
+          <div class="arrow-right">→</div>
+          <div class="breath-step">
+            <div class="step-label">Cycle</div>
+            <div class="step-value">How it stops</div>
+            <div class="step-desc">Time, volume, or flow decrease</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Topics</div>
+    <h2>What You'll Learn</h2>
+    <p class="desc">Tap any topic below to jump to the relevant section, or use the navigation tabs above.</p>
+
+    <div class="card-grid">
+      <div class="card" onclick="switchTab('scalars')">
+        <div class="card-icon">📈</div>
+        <h3>Scalars</h3>
+        <p>Volume, flow, and pressure plotted against time — the three core waveforms displayed on every ventilator.</p>
+        <span class="tag tag-scalar">3 Waveforms</span>
+      </div>
+      <div class="card" onclick="switchTab('loops')">
+        <div class="card-icon">🔄</div>
+        <h3>Loops</h3>
+        <p>Pressure-volume and flow-volume curves that reveal compliance, overdistension, and obstruction at a glance.</p>
+        <span class="tag tag-loop">2 Loops</span>
+      </div>
+      <div class="card" onclick="switchTab('async')">
+        <div class="card-icon">⚡</div>
+        <h3>Patient-Ventilator Asynchrony</h3>
+        <p>Trigger failures, flow starvation, and cycling mismatch — found in ~1/3 of pediatric ventilator breaths.</p>
+        <span class="tag tag-async">6 Types</span>
+      </div>
+      <div class="card" onclick="switchTab('quiz')">
+        <div class="card-icon">🧠</div>
+        <h3>Test Yourself</h3>
+        <p>Interactive questions to reinforce your understanding of waveform interpretation and clinical decision-making.</p>
+        <span class="tag tag-concept">10 Questions</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SCALARS ========== -->
+  <section class="section" id="sec-scalars">
+    <div class="section-title">Module 1</div>
+    <h2>Scalars: Parameters Over Time</h2>
+    <p class="desc">Scalars plot a respiratory parameter (volume, flow, or pressure) on the y-axis against time on the x-axis. They show the entire breath from inspiration start to expiration end.</p>
+
+    <!-- VOLUME vs TIME -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num">V</div>
+        <h3>Volume vs. Time Scalar</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="waveform-container">
+          <div class="waveform-header">
+            <span class="waveform-title">VOLUME vs TIME</span>
+            <div class="waveform-controls">
+              <button class="wf-btn active" onclick="showVolWave('normal',this)">Normal</button>
+              <button class="wf-btn" onclick="showVolWave('leak',this)">Air Leak</button>
+              <button class="wf-btn" onclick="showVolWave('trap',this)">Auto-PEEP</button>
+            </div>
+          </div>
+          <svg id="svgVol" class="waveform-svg" viewBox="0 0 600 200"></svg>
+        </div>
+        <p>The upslope represents inspiratory volume and the downslope is expiratory volume. The two should be equal — any difference signals an air leak or intrinsic PEEP (air trapping).</p>
+        <div class="key-points">
+          <div class="key-point"><div class="dot"></div><span><strong>Upslope</strong> = volume entering the lungs during inspiration</span></div>
+          <div class="key-point"><div class="dot"></div><span><strong>Downslope</strong> = volume leaving during expiration</span></div>
+          <div class="key-point"><div class="dot"></div><span><strong>Air leak</strong> = sudden drop; expiratory volume less than inspiratory</span></div>
+          <div class="key-point"><div class="dot"></div><span><strong>Air trapping</strong> = expiratory curve plateaus, never reaching zero before next breath</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOW vs TIME -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num">F</div>
+        <h3>Flow vs. Time Scalar</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="waveform-container">
+          <div class="waveform-header">
+            <span class="waveform-title">FLOW vs TIME</span>
+            <div class="waveform-controls">
+              <button class="wf-btn active" onclick="showFlowWave('vc',this)">Volume Ctrl</button>
+              <button class="wf-btn" onclick="showFlowWave('pc',this)">Pressure Ctrl</button>
+              <button class="wf-btn" onclick="showFlowWave('obstruct',this)">Obstruction</button>
+            </div>
+          </div>
+          <svg id="svgFlow" class="waveform-svg" viewBox="0 0 600 200"></svg>
+        </div>
+        <p>Inspiratory flow is positive (above baseline) and expiratory flow is negative (below baseline). The inspiratory shape differs by mode — square in volume control, decelerating in pressure control.</p>
+
+        <div class="annotation">
+          <div class="annotation-icon">💡</div>
+          <p><strong>Clinical pearl:</strong> In obstruction (e.g., bronchospasm), the expiratory limb shows decreased peak expiratory flow and prolonged return to zero — the hallmark of air trapping on the flow scalar.</p>
+        </div>
+
+        <table class="comp-table">
+          <tr><th>Feature</th><th>Volume Control</th><th>Pressure Control</th></tr>
+          <tr><td>Inspiratory flow shape</td><td>Square / constant</td><td>Decelerating</td></tr>
+          <tr><td>PIP</td><td>Higher (variable)</td><td>Lower (set)</td></tr>
+          <tr><td>Mean airway pressure</td><td>Lower</td><td>Higher</td></tr>
+          <tr><td>Tidal volume</td><td>Set (constant)</td><td>Variable</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- PRESSURE vs TIME -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num">P</div>
+        <h3>Pressure vs. Time Scalar</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="waveform-container">
+          <div class="waveform-header">
+            <span class="waveform-title">PRESSURE vs TIME</span>
+            <div class="waveform-controls">
+              <button class="wf-btn active" onclick="showPressWave('pc',this)">Pressure Ctrl</button>
+              <button class="wf-btn" onclick="showPressWave('vc',this)">Volume Ctrl</button>
+              <button class="wf-btn" onclick="showPressWave('plat',this)">Plateau (Pplat)</button>
+            </div>
+          </div>
+          <svg id="svgPress" class="waveform-svg" viewBox="0 0 600 200"></svg>
+        </div>
+        <p>The baseline represents PEEP and the peak represents PIP. In pressure control, the waveform is square-shaped. In volume control, pressure rises progressively due to constant flow.</p>
+
+        <div class="annotation">
+          <div class="annotation-icon">🎯</div>
+          <p><strong>Plateau pressure (P<sub>plat</sub>)</strong> is measured by an inspiratory hold maneuver. It reflects alveolar pressure with no airflow. A large PIP–P<sub>plat</sub> gap indicates high airway resistance (e.g., severe bronchospasm).</p>
+        </div>
+
+        <div class="lesson-panel" style="margin-top:1rem; background:var(--bg-secondary);">
+          <div class="lesson-header" style="border-color:var(--border);">
+            <div class="lesson-num" style="background:var(--accent-amber);font-size:0.65rem;">SI</div>
+            <h3>Stress Index</h3>
+          </div>
+          <div class="lesson-body">
+            <p>The stress index is derived from the pressure scalar during volume-controlled ventilation. It evaluates how compliance changes as volume enters the lung.</p>
+            <div class="key-points">
+              <div class="key-point"><div class="dot" style="background:var(--accent-green)"></div><span><strong>SI = 1:</strong> Straight slope — normal compliance; pressure rises at constant rate</span></div>
+              <div class="key-point"><div class="dot" style="background:var(--accent-cyan)"></div><span><strong>SI &lt; 1:</strong> Downward curve — improving compliance, lung recruitment</span></div>
+              <div class="key-point"><div class="dot" style="background:var(--accent-amber)"></div><span><strong>SI &gt; 1:</strong> Upward curve — worsening compliance, possible overdistension</span></div>
+              <div class="key-point"><div class="dot" style="background:var(--accent-purple)"></div><span>Can be used to titrate PEEP and tidal volume for optimal lung recruitment</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== LOOPS ========== -->
+  <section class="section" id="sec-loops">
+    <div class="section-title">Module 2</div>
+    <h2>Loops: Pressure-Volume & Flow-Volume</h2>
+    <p class="desc">Loops plot two respiratory variables against each other during a single breath, revealing compliance, resistance, and overdistension in real time.</p>
+
+    <!-- PV Loop -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num" style="background:var(--accent-purple)">PV</div>
+        <h3>Pressure-Volume Loop</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="waveform-container">
+          <div class="waveform-header">
+            <span class="waveform-title">PRESSURE-VOLUME LOOP</span>
+            <div class="waveform-controls">
+              <button class="wf-btn active" onclick="showPVLoop('normal',this)">Normal</button>
+              <button class="wf-btn" onclick="showPVLoop('overdist',this)">Overdistension</button>
+              <button class="wf-btn" onclick="showPVLoop('lowcomp',this)">Low Compliance</button>
+            </div>
+          </div>
+          <svg id="svgPV" class="waveform-svg" viewBox="0 0 600 200"></svg>
+        </div>
+
+        <p>The PV loop starts near the origin (functional residual capacity) and travels counterclockwise. The inspiratory limb is sigmoidal with an initial flat portion (opening collapsed airways), a steep middle section (active recruitment), and a flattening top (nearing capacity).</p>
+
+        <div class="key-points">
+          <div class="key-point"><div class="dot" style="background:var(--accent-cyan)"></div><span><strong>Lower inflection point (LIP):</strong> Collapsed alveoli begin to open; some suggest setting PEEP just above this point</span></div>
+          <div class="key-point"><div class="dot" style="background:var(--accent-amber)"></div><span><strong>Upper inflection point (UIP):</strong> More pressure yields minimal volume gain — overdistension begins; "beaking" appearance</span></div>
+          <div class="key-point"><div class="dot" style="background:var(--accent-purple)"></div><span><strong>Hysteresis:</strong> The area between inspiratory and expiratory limbs, reflecting that inflation requires more energy than deflation</span></div>
+          <div class="key-point"><div class="dot" style="background:var(--accent-green)"></div><span><strong>Slope = compliance:</strong> Steep slope = good compliance; flat slope = poor compliance</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FV Loop -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num" style="background:var(--accent-cyan)">FV</div>
+        <h3>Flow-Volume Loop</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="waveform-container">
+          <div class="waveform-header">
+            <span class="waveform-title">FLOW-VOLUME LOOP</span>
+            <div class="waveform-controls">
+              <button class="wf-btn active" onclick="showFVLoop('normal',this)">Normal</button>
+              <button class="wf-btn" onclick="showFVLoop('obstruct',this)">Obstruction</button>
+            </div>
+          </div>
+          <svg id="svgFV" class="waveform-svg" viewBox="0 0 600 200"></svg>
+        </div>
+
+        <p>On ventilators, inspiration is typically on top and expiration on the bottom (the reverse of pulmonary function testing). The curve moves clockwise. The expiratory limb is most clinically informative.</p>
+
+        <div class="annotation">
+          <div class="annotation-icon">⚠️</div>
+          <p><strong>Obstruction pattern:</strong> Lower peak expiratory flow + a "scooped out" concave expiratory limb. If expiration doesn't return to zero volume, <strong>air trapping</strong> is present. This pattern is classic for bronchospasm or mucus plugging.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ASYNCHRONY ========== -->
+  <section class="section" id="sec-async">
+    <div class="section-title">Module 3</div>
+    <h2>Patient-Ventilator Asynchrony (PVA)</h2>
+    <p class="desc">PVA is found in approximately one-third of ventilator breaths in pediatric patients and is linked to longer ventilation duration, longer ICU stay, and increased mortality. Recognizing it on waveforms is a critical bedside skill.</p>
+
+    <div class="annotation" style="border-color:var(--accent-red);">
+      <div class="annotation-icon">🚨</div>
+      <p>PVA consequences include: increased sedation needs, increased work of breathing, V/Q mismatch, dynamic hyperinflation, delayed weaning, and higher mortality.</p>
+    </div>
+
+    <!-- Trigger Asynchrony -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num" style="background:var(--accent-amber)">T</div>
+        <h3>Trigger Asynchronies</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="waveform-container">
+          <div class="waveform-header">
+            <span class="waveform-title">TRIGGER ASYNCHRONY</span>
+            <div class="waveform-controls">
+              <button class="wf-btn active" onclick="showAsyncWave('ineffective',this)">Ineffective</button>
+              <button class="wf-btn" onclick="showAsyncWave('double',this)">Double</button>
+              <button class="wf-btn" onclick="showAsyncWave('auto',this)">Auto-trigger</button>
+            </div>
+          </div>
+          <svg id="svgAsync" class="waveform-svg" viewBox="0 0 600 200"></svg>
+        </div>
+
+        <table class="comp-table">
+          <tr><th>Type</th><th>What Happens</th><th>Waveform Sign</th><th>Fix</th></tr>
+          <tr>
+            <td><strong>Ineffective trigger</strong></td>
+            <td>Patient effort not recognized; delayed or missed breath</td>
+            <td>Deflection in expiratory flow with no delivered breath</td>
+            <td>Increase trigger sensitivity; reduce auto-PEEP; add external PEEP</td>
+          </tr>
+          <tr>
+            <td><strong>Double trigger</strong></td>
+            <td>Patient wants longer inspiration than ventilator allows</td>
+            <td>Two breaths back-to-back with no exhalation between</td>
+            <td>Increase inspiratory time or tidal volume</td>
+          </tr>
+          <tr>
+            <td><strong>Reverse trigger</strong></td>
+            <td>Ventilator breath causes diaphragm contraction (often with heavy sedation)</td>
+            <td>Extra volume/flow at end of machine breath</td>
+            <td>Adjust sedation; change mode</td>
+          </tr>
+          <tr>
+            <td><strong>Auto-trigger</strong></td>
+            <td>Machine delivers breaths not initiated by patient</td>
+            <td>Rapid full breaths resembling tachypnea; no initial pressure dip</td>
+            <td>Fix air leaks; decrease trigger sensitivity; drain circuit condensation</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Flow Asynchrony -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num" style="background:var(--accent-red)">F</div>
+        <h3>Flow Starvation</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="waveform-container">
+          <div class="waveform-header">
+            <span class="waveform-title">FLOW STARVATION</span>
+          </div>
+          <svg id="svgFlowStarve" class="waveform-svg" viewBox="0 0 600 200"></svg>
+        </div>
+        <p>Flow starvation occurs when the patient demands more flow than the ventilator provides. The signature finding is a <strong>dip or scalloping in the pressure scalar</strong> during inspiration without corresponding changes in the flow scalar. The patient generates negative pressure trying to pull more volume.</p>
+        <div class="annotation">
+          <div class="annotation-icon">🔧</div>
+          <p><strong>Fix:</strong> Increase the set flow rate or switch to a variable-flow mode (pressure control). Flow starvation is more common in volume control modes where flow is fixed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cycling Asynchrony -->
+    <div class="lesson-panel">
+      <div class="lesson-header">
+        <div class="lesson-num" style="background:var(--accent-purple)">C</div>
+        <h3>Cycling Asynchronies</h3>
+      </div>
+      <div class="lesson-body">
+        <div class="key-points">
+          <div class="key-point"><div class="dot" style="background:var(--accent-amber)"></div><span><strong>Premature cycling:</strong> Ventilator stops breath too early. Shows as upward deflection in flow after the machine ends inspiration. May trigger a second breath.</span></div>
+          <div class="key-point"><div class="dot" style="background:var(--accent-red)"></div><span><strong>Delayed cycling:</strong> Ventilator inspiratory time is too long. Patient tries to exhale during inspiration → pressure rise at end of pressure scalar + zero-flow period during inspiration.</span></div>
+        </div>
+        <div class="annotation">
+          <div class="annotation-icon">🔧</div>
+          <p><strong>Both can be fixed</strong> by adjusting the inspiratory time or flow rate to better match the patient's own respiratory drive and timing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section class="section" id="sec-quiz">
+    <div class="section-title">Test Yourself</div>
+    <h2>Knowledge Check</h2>
+    <p class="desc">Answer these questions to reinforce your understanding of ventilator waveform interpretation.</p>
+
+    <div class="score-bar">
+      <span class="score-label">Score</span>
+      <span class="score-val" id="quizScore">0 / 0</span>
+    </div>
+
+    <div id="quizArea"></div>
+  </section>
+
+</main>
+
+<!-- Detail overlay -->
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detailPanel"></div>
+</div>
+
+<script>
+// ==================== NAVIGATION ====================
+const tabs = document.querySelectorAll('.nav-tab');
+const sections = document.querySelectorAll('.section');
+const progressFill = document.getElementById('progressFill');
+const tabOrder = ['overview','scalars','loops','async','quiz'];
+
+function switchTab(tabName) {
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  sections.forEach(s => s.classList.toggle('active', s.id === 'sec-' + tabName));
+  const idx = tabOrder.indexOf(tabName);
+  progressFill.style.width = ((idx + 1) / tabOrder.length * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Initialize waveforms for the tab
+  setTimeout(() => {
+    if (tabName === 'scalars') { showVolWave('normal'); showFlowWave('vc'); showPressWave('pc'); }
+    if (tabName === 'loops') { showPVLoop('normal'); showFVLoop('normal'); }
+    if (tabName === 'async') { showAsyncWave('ineffective'); drawFlowStarvation(); }
+    if (tabName === 'quiz') initQuiz();
+  }, 100);
+}
+
+tabs.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+// ==================== SVG HELPERS ====================
+function svgGrid(svgEl, yLabel, xLabel='Time (s)', yMid=true) {
+  let html = '';
+  // horizontal grid
+  for (let y = 20; y < 200; y += 36) {
+    html += `<line x1="50" y1="${y}" x2="590" y2="${y}" class="grid-line"/>`;
+  }
+  // vertical grid
+  for (let x = 50; x <= 590; x += 60) {
+    html += `<line x1="${x}" y1="10" x2="${x}" y2="190" class="grid-line"/>`;
+  }
+  // axes
+  html += `<line x1="50" y1="10" x2="50" y2="190" stroke="#2a3a55" stroke-width="1"/>`;
+  if (yMid) html += `<line x1="50" y1="100" x2="590" y2="100" stroke="#2a3a55" stroke-width="1" stroke-dasharray="4,4"/>`;
+  html += `<line x1="50" y1="190" x2="590" y2="190" stroke="#2a3a55" stroke-width="1"/>`;
+  // labels
+  html += `<text x="25" y="105" class="axis-label" text-anchor="middle" transform="rotate(-90,25,105)">${yLabel}</text>`;
+  html += `<text x="320" y="199" class="axis-label" text-anchor="middle">${xLabel}</text>`;
+  return html;
+}
+
+function pathStr(points) {
+  return points.map((p,i) => (i===0?'M':'L') + p[0]+','+p[1]).join(' ');
+}
+
+// ==================== VOLUME vs TIME ====================
+function showVolWave(mode, btn) {
+  if (btn) btn.parentElement.querySelectorAll('.wf-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const svg = document.getElementById('svgVol');
+  let html = svgGrid(svg, 'Volume (mL)', 'Time (s)', false);
+
+  const base = 170;
+  if (mode === 'normal') {
+    for (let i = 0; i < 3; i++) {
+      const ox = 70 + i * 170;
+      const pts = [[ox,base],[ox+40,40],[ox+50,40],[ox+90,base],[ox+130,base]];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#00e5a0" style="animation-delay:${i*0.3}s"/>`;
+    }
+    html += `<text x="160" y="30" class="wf-label">Normal: inspiratory = expiratory volume</text>`;
+  } else if (mode === 'leak') {
+    const ox = 70;
+    const pts1 = [[ox,base],[ox+40,40],[ox+50,40],[ox+90,base],[ox+130,base]];
+    html += `<path d="${pathStr(pts1)}" class="wf-path wf-path-anim" stroke="#00e5a0"/>`;
+    const ox2 = 240;
+    const pts2 = [[ox2,base],[ox2+40,40],[ox2+50,40],[ox2+70,110],[ox2+90,110]];
+    html += `<path d="${pathStr(pts2)}" class="wf-path wf-path-anim" stroke="#ff4757" style="animation-delay:0.3s"/>`;
+    html += `<text x="${ox2+75}" y="105" class="wf-label-red" font-size="9">Volume missing ↑</text>`;
+    html += `<text x="160" y="30" class="wf-label-red">Air leak: expiratory volume drops off suddenly</text>`;
+  } else if (mode === 'trap') {
+    for (let i = 0; i < 3; i++) {
+      const ox = 70 + i * 170;
+      const trapped = i * 12;
+      const pts = [[ox, base - trapped],[ox+40, 40],[ox+50, 40],[ox+90, base - trapped - 12],[ox+130, base - trapped - 12]];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="${i===0?'#00e5a0':'#ffbe0b'}" style="animation-delay:${i*0.3}s"/>`;
+    }
+    html += `<text x="160" y="30" class="wf-label-amber">Auto-PEEP: expiration never reaches zero before next breath</text>`;
+  }
+  svg.innerHTML = html;
+}
+
+// ==================== FLOW vs TIME ====================
+function showFlowWave(mode, btn) {
+  if (btn) btn.parentElement.querySelectorAll('.wf-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const svg = document.getElementById('svgFlow');
+  let html = svgGrid(svg, 'Flow (L/min)');
+
+  const mid = 100;
+  if (mode === 'vc') {
+    for (let i = 0; i < 3; i++) {
+      const ox = 70 + i * 170;
+      const pts = [
+        [ox, mid], [ox+2, 40], [ox+60, 40], [ox+62, mid],
+        [ox+64, 160], [ox+80, 155], [ox+100, mid+10], [ox+120, mid+2], [ox+130, mid]
+      ];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#00e5a0" style="animation-delay:${i*0.3}s"/>`;
+    }
+    html += `<text x="160" y="30" class="wf-label">Volume control: square inspiratory waveform</text>`;
+    html += `<text x="100" y="50" class="axis-label" fill="#00e5a0">Inspiration ↑</text>`;
+    html += `<text x="100" y="170" class="axis-label" fill="#ff4757">Expiration ↓</text>`;
+  } else if (mode === 'pc') {
+    for (let i = 0; i < 3; i++) {
+      const ox = 70 + i * 170;
+      const pts = [
+        [ox, mid], [ox+2, 35], [ox+20, 55], [ox+40, 70], [ox+60, 85], [ox+62, mid],
+        [ox+64, 160], [ox+80, 155], [ox+100, mid+10], [ox+120, mid+2], [ox+130, mid]
+      ];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#00d4ff" style="animation-delay:${i*0.3}s"/>`;
+    }
+    html += `<text x="160" y="30" class="wf-label-cyan">Pressure control: decelerating inspiratory flow</text>`;
+  } else if (mode === 'obstruct') {
+    for (let i = 0; i < 2; i++) {
+      const ox = 70 + i * 250;
+      const pts = [
+        [ox, mid], [ox+2, 35], [ox+20, 55], [ox+40, 70], [ox+60, 85], [ox+62, mid],
+        [ox+64, 130], [ox+90, 145], [ox+130, 150], [ox+170, 140], [ox+200, mid+5]
+      ];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#ffbe0b" style="animation-delay:${i*0.4}s"/>`;
+    }
+    // mark air trapping
+    html += `<text x="300" y="145" class="wf-label-amber" font-size="9">Prolonged expiration ↑</text>`;
+    html += `<text x="160" y="30" class="wf-label-amber">Obstruction: low peak exp. flow + prolonged return to baseline</text>`;
+  }
+  svg.innerHTML = html;
+}
+
+// ==================== PRESSURE vs TIME ====================
+function showPressWave(mode, btn) {
+  if (btn) btn.parentElement.querySelectorAll('.wf-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const svg = document.getElementById('svgPress');
+  let html = svgGrid(svg, 'Pressure (cmH₂O)', 'Time (s)', false);
+  const base = 160, peep = 150;
+
+  if (mode === 'pc') {
+    for (let i = 0; i < 3; i++) {
+      const ox = 70 + i * 170;
+      const pts = [
+        [ox, peep], [ox+3, 50], [ox+60, 50], [ox+63, peep], [ox+130, peep]
+      ];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#a78bfa" style="animation-delay:${i*0.3}s"/>`;
+    }
+    // labels
+    html += `<line x1="50" y1="${peep}" x2="590" y2="${peep}" stroke="#2a3a55" stroke-width="1" stroke-dasharray="4,4"/>`;
+    html += `<text x="55" y="${peep-5}" class="axis-label" fill="#8899b4">PEEP</text>`;
+    html += `<text x="135" y="45" class="wf-label" fill="#a78bfa">PIP</text>`;
+    html += `<text x="160" y="30" class="wf-label" fill="#a78bfa">Pressure control: square waveform</text>`;
+  } else if (mode === 'vc') {
+    for (let i = 0; i < 3; i++) {
+      const ox = 70 + i * 170;
+      const pts = [
+        [ox, peep], [ox+3, peep-10], [ox+60, 55], [ox+63, peep], [ox+130, peep]
+      ];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#00d4ff" style="animation-delay:${i*0.3}s"/>`;
+    }
+    html += `<line x1="50" y1="${peep}" x2="590" y2="${peep}" stroke="#2a3a55" stroke-width="1" stroke-dasharray="4,4"/>`;
+    html += `<text x="55" y="${peep-5}" class="axis-label" fill="#8899b4">PEEP</text>`;
+    html += `<text x="135" y="50" class="wf-label-cyan">PIP</text>`;
+    html += `<text x="160" y="30" class="wf-label-cyan">Volume control: ascending pressure (shark fin)</text>`;
+  } else if (mode === 'plat') {
+    const ox = 120;
+    const pts = [
+      [ox, peep], [ox+3, peep-10], [ox+80, 50], [ox+82, 70], [ox+130, 70], [ox+132, peep], [ox+200, peep]
+    ];
+    html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#00e5a0"/>`;
+    html += `<line x1="50" y1="${peep}" x2="590" y2="${peep}" stroke="#2a3a55" stroke-width="1" stroke-dasharray="4,4"/>`;
+    // PIP arrow
+    html += `<line x1="${ox+80}" y1="50" x2="${ox+80}" y2="45" stroke="#ff4757" stroke-width="1"/>`;
+    html += `<text x="${ox+82}" y="42" class="wf-label-red" font-size="9">PIP</text>`;
+    // Pplat
+    html += `<line x1="${ox+82}" y1="70" x2="${ox+130}" y2="70" stroke="#ffbe0b" stroke-width="1.5" stroke-dasharray="4,2"/>`;
+    html += `<text x="${ox+135}" y="73" class="wf-label-amber" font-size="9">Pplat</text>`;
+    // gap
+    html += `<line x1="${ox+75}" y1="50" x2="${ox+75}" y2="70" stroke="#ff4757" stroke-width="1" stroke-dasharray="2,2"/>`;
+    html += `<text x="${ox+30}" y="62" class="wf-label-red" font-size="8">PIP−Pplat gap</text>`;
+    html += `<text x="55" y="${peep-5}" class="axis-label" fill="#8899b4">PEEP</text>`;
+    html += `<text x="160" y="30" class="wf-label-amber">Inspiratory hold → Plateau pressure revealed</text>`;
+  }
+  svg.innerHTML = html;
+}
+
+// ==================== PV LOOP ====================
+function showPVLoop(mode, btn) {
+  if (btn) btn.parentElement.querySelectorAll('.wf-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const svg = document.getElementById('svgPV');
+  let html = svgGrid(svg, 'Volume (mL)', 'Pressure (cmH₂O)', false);
+
+  if (mode === 'normal') {
+    // inspiratory limb (lower) - counterclockwise
+    const insp = [[80,180],[100,170],[130,140],[170,100],[220,65],[270,45],[310,35],[340,30]];
+    const exp = [[340,30],[320,25],[280,32],[240,50],[200,75],[160,105],[120,145],[80,180]];
+    html += `<path d="${pathStr(insp)}" class="wf-path wf-path-anim" stroke="#00e5a0"/>`;
+    html += `<path d="${pathStr(exp)}" class="wf-path wf-path-anim" stroke="#00d4ff" style="animation-delay:0.5s"/>`;
+    // fill hysteresis
+    html += `<path d="${pathStr(insp)} ${pathStr(exp.slice().reverse()).replace('M','L')}" class="wf-area" fill="#00e5a0"/>`;
+    // labels
+    html += `<text x="140" y="165" class="wf-label" font-size="9">Inspiration</text>`;
+    html += `<text x="250" y="25" class="wf-label-cyan" font-size="9">Expiration</text>`;
+    html += `<text x="400" y="110" class="axis-label" fill="#8899b4">Hysteresis</text>`;
+    html += `<text x="90" y="178" class="wf-label-amber" font-size="8">LIP ↗</text>`;
+    html += `<text x="300" y="28" class="wf-label-amber" font-size="8">UIP</text>`;
+  } else if (mode === 'overdist') {
+    const insp = [[80,180],[100,170],[130,140],[170,100],[220,65],[270,45],[330,38],[380,36],[420,35]];
+    const exp = [[420,35],[380,30],[330,32],[270,45],[220,65],[170,100],[130,140],[80,180]];
+    html += `<path d="${pathStr(insp)}" class="wf-path wf-path-anim" stroke="#ff4757"/>`;
+    html += `<path d="${pathStr(exp)}" class="wf-path wf-path-anim" stroke="#ffbe0b" style="animation-delay:0.5s"/>`;
+    // beaking
+    html += `<text x="370" y="30" class="wf-label-red" font-size="9">"Beaking" = overdistension</text>`;
+  } else if (mode === 'lowcomp') {
+    // flatter slope = poor compliance
+    const insp = [[80,180],[120,170],[180,155],[250,140],[320,130],[380,125],[420,123]];
+    const exp = [[420,123],[380,120],[320,125],[250,135],[180,150],[120,165],[80,180]];
+    html += `<path d="${pathStr(insp)}" class="wf-path wf-path-anim" stroke="#ffbe0b"/>`;
+    html += `<path d="${pathStr(exp)}" class="wf-path wf-path-anim" stroke="#a78bfa" style="animation-delay:0.5s"/>`;
+    html += `<text x="250" y="115" class="wf-label-amber" font-size="9">Flat slope = low compliance</text>`;
+  }
+  svg.innerHTML = html;
+}
+
+// ==================== FV LOOP ====================
+function showFVLoop(mode, btn) {
+  if (btn) btn.parentElement.querySelectorAll('.wf-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const svg = document.getElementById('svgFV');
+  let html = svgGrid(svg, 'Flow (L/min)', 'Volume (mL)');
+
+  const mid = 100;
+  if (mode === 'normal') {
+    // inspiration top, expiration bottom — clockwise
+    const insp = [[80,mid],[100,45],[150,40],[250,38],[350,45],[420,60],[480,mid]];
+    const exp = [[480,mid],[450,145],[380,160],[300,162],[220,155],[150,140],[80,mid]];
+    html += `<path d="${pathStr(insp)}" class="wf-path wf-path-anim" stroke="#00e5a0"/>`;
+    html += `<path d="${pathStr(exp)}" class="wf-path wf-path-anim" stroke="#00d4ff" style="animation-delay:0.5s"/>`;
+    html += `<text x="250" y="32" class="wf-label" font-size="9">Inspiration</text>`;
+    html += `<text x="250" y="178" class="wf-label-cyan" font-size="9">Expiration</text>`;
+  } else if (mode === 'obstruct') {
+    const insp = [[80,mid],[100,45],[150,40],[250,38],[350,45],[420,60],[480,mid]];
+    // scooped out expiratory limb + air trapping (doesn't return to start)
+    const exp = [[480,mid],[460,135],[420,155],[350,170],[280,175],[200,172],[140,160],[110,mid+10]];
+    html += `<path d="${pathStr(insp)}" class="wf-path wf-path-anim" stroke="#00e5a0"/>`;
+    html += `<path d="${pathStr(exp)}" class="wf-path wf-path-anim" stroke="#ff4757" style="animation-delay:0.5s"/>`;
+    // air trapping indicator
+    html += `<line x1="80" y1="${mid}" x2="110" y2="${mid+10}" stroke="#ffbe0b" stroke-width="1.5" stroke-dasharray="4,2"/>`;
+    html += `<text x="85" y="${mid+25}" class="wf-label-amber" font-size="8">Air trapping ↑</text>`;
+    html += `<text x="280" y="185" class="wf-label-red" font-size="9">"Scooped out" = obstruction</text>`;
+  }
+  svg.innerHTML = html;
+}
+
+// ==================== ASYNC WAVEFORMS ====================
+function showAsyncWave(mode, btn) {
+  if (btn) btn.parentElement.querySelectorAll('.wf-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const svg = document.getElementById('svgAsync');
+  let html = svgGrid(svg, 'Flow (L/min)');
+  const mid = 100;
+
+  if (mode === 'ineffective') {
+    // normal breath
+    const ox = 70;
+    html += drawBreath(ox, mid, '#00e5a0');
+    // ineffective trigger attempt — small deflection, no breath
+    const ix = 220;
+    html += `<path d="M${ix},${mid} L${ix+5},${mid+15} L${ix+15},${mid+10} L${ix+20},${mid}" class="wf-path wf-path-anim" stroke="#ff4757" style="animation-delay:0.3s"/>`;
+    html += `<text x="${ix-5}" y="${mid-10}" class="wf-label-red" font-size="9">Ineffective trigger ↓</text>`;
+    // next normal breath
+    html += drawBreath(290, mid, '#00e5a0', 0.6);
+    html += `<text x="160" y="25" class="wf-label-red">Patient effort not recognized — no breath delivered</text>`;
+  } else if (mode === 'double') {
+    const ox = 100;
+    // first breath
+    html += drawBreath(ox, mid, '#00e5a0', 0);
+    // second immediately after — no exhalation gap
+    html += drawBreath(ox + 70, mid, '#ffbe0b', 0.3);
+    // gap after
+    html += drawBreath(ox + 250, mid, '#00e5a0', 0.6);
+    html += `<text x="${ox+60}" y="25" class="wf-label-amber">Double trigger: two breaths with no exhalation between</text>`;
+  } else if (mode === 'auto') {
+    // rapid breaths with no patient effort dip
+    for (let i = 0; i < 5; i++) {
+      const ox = 70 + i * 105;
+      const pts = [
+        [ox, mid],[ox+2, 40],[ox+30, 40],[ox+32, mid],
+        [ox+34, 150],[ox+55, 145],[ox+70, mid+5],[ox+85, mid]
+      ];
+      html += `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="#ff4757" style="animation-delay:${i*0.15}s"/>`;
+    }
+    html += `<text x="160" y="25" class="wf-label-red">Auto-triggering: rapid machine breaths resembling tachypnea</text>`;
+  }
+  svg.innerHTML = html;
+}
+
+function drawBreath(ox, mid, color, delay=0) {
+  const pts = [
+    [ox, mid],[ox+2, 40],[ox+40, 40],[ox+42, mid],
+    [ox+44, 155],[ox+60, 150],[ox+80, mid+8],[ox+100, mid]
+  ];
+  return `<path d="${pathStr(pts)}" class="wf-path wf-path-anim" stroke="${color}" style="animation-delay:${delay}s"/>`;
+}
+
+// ==================== FLOW STARVATION ====================
+function drawFlowStarvation() {
+  const svg = document.getElementById('svgFlowStarve');
+  let html = '';
+  // Two panels: pressure on top half, flow on bottom half
+  // Pressure panel
+  html += `<rect x="50" y="5" width="540" height="90" fill="none" stroke="#1e2d45" rx="4"/>`;
+  html += `<text x="55" y="16" class="axis-label" fill="#8899b4">Pressure</text>`;
+  for (let x = 50; x <= 590; x += 60) html += `<line x1="${x}" y1="5" x2="${x}" y2="95" class="grid-line"/>`;
+  const pBase = 80;
+  // Normal pressure breath
+  html += `<path d="M80,${pBase} L83,${pBase-5} L120,25 L123,${pBase} L180,${pBase}" class="wf-path wf-path-anim" stroke="#a78bfa"/>`;
+  // Flow starvation dip
+  html += `<path d="M230,${pBase} L233,${pBase-5} L260,30 L280,45 L290,35 L310,25 L313,${pBase} L370,${pBase}" class="wf-path wf-path-anim" stroke="#ff4757" style="animation-delay:0.3s"/>`;
+  html += `<text x="270" y="55" class="wf-label-red" font-size="8">Dip ↓</text>`;
+  // Flow panel
+  html += `<rect x="50" y="105" width="540" height="90" fill="none" stroke="#1e2d45" rx="4"/>`;
+  html += `<text x="55" y="116" class="axis-label" fill="#8899b4">Flow</text>`;
+  for (let x = 50; x <= 590; x += 60) html += `<line x1="${x}" y1="105" x2="${x}" y2="195" class="grid-line"/>`;
+  const fMid = 150;
+  // Both flow breaths look the same (no change in flow)
+  html += `<path d="M80,${fMid} L82,120 L120,120 L122,${fMid} L124,175 L145,170 L165,${fMid+3} L180,${fMid}" class="wf-path wf-path-anim" stroke="#00e5a0" style="animation-delay:0.5s"/>`;
+  html += `<path d="M230,${fMid} L232,120 L310,120 L312,${fMid} L314,175 L335,170 L355,${fMid+3} L370,${fMid}" class="wf-path wf-path-anim" stroke="#00e5a0" style="animation-delay:0.7s"/>`;
+  html += `<text x="400" y="145" class="wf-label" font-size="9">Flow unchanged despite pressure dip</text>`;
+
+  svg.innerHTML = html;
+}
+
+// ==================== QUIZ ====================
+const quizData = [
+  {
+    q: "The volume vs. time scalar shows the expiratory limb plateauing before returning to zero. What does this indicate?",
+    opts: ["Air leak in the circuit", "Auto-PEEP / air trapping", "Normal expiration", "High airway resistance"],
+    correct: 1,
+    explain: "When the expiratory limb plateaus and doesn't reach zero volume before the next breath, it indicates air trapping (auto-PEEP) — gas is being retained in the lungs."
+  },
+  {
+    q: "In volume control ventilation, the flow scalar has which characteristic shape?",
+    opts: ["Decelerating (ramp)", "Sinusoidal", "Square (constant flow)", "Exponential rise"],
+    correct: 2,
+    explain: "Volume control modes deliver a constant (set) inspiratory flow, producing a square waveform. Pressure control modes produce a decelerating flow pattern."
+  },
+  {
+    q: "A large gap between PIP and plateau pressure (Pplat) suggests:",
+    opts: ["Low lung compliance", "High airway resistance", "Auto-PEEP", "Overdistension"],
+    correct: 1,
+    explain: "PIP includes both resistive and elastic components. Pplat reflects only elastic (alveolar) pressure. A large PIP–Pplat difference indicates significant airway resistance, as seen in bronchospasm."
+  },
+  {
+    q: "On the pressure-volume loop, 'beaking' at the upper right indicates:",
+    opts: ["Optimal lung recruitment", "Alveolar overdistension", "Improved compliance", "Air leak"],
+    correct: 1,
+    explain: "Beaking occurs at the upper inflection point when additional pressure yields minimal volume gain — a sign of overdistension where compliance drops sharply."
+  },
+  {
+    q: "A 'scooped out' expiratory limb on the flow-volume loop is characteristic of:",
+    opts: ["Restrictive lung disease", "Normal breathing", "Obstructive airflow (e.g., bronchospasm)", "Air leak"],
+    correct: 2,
+    explain: "The concave/scooped expiratory limb represents lower flows at a given volume during exhalation — the hallmark of an obstructive process like bronchospasm or mucus plugging."
+  },
+  {
+    q: "A deflection in expiratory flow with no breath delivered indicates:",
+    opts: ["Auto-triggering", "Ineffective triggering", "Double triggering", "Flow starvation"],
+    correct: 1,
+    explain: "Ineffective triggering occurs when the patient's inspiratory effort causes a small deflection in expiratory flow but the ventilator fails to recognize it and no breath is delivered."
+  },
+  {
+    q: "Two consecutive breaths with no exhalation time between them suggest:",
+    opts: ["Auto-triggering", "Premature cycling", "Double triggering", "Reverse triggering"],
+    correct: 2,
+    explain: "Double triggering occurs when the patient wants a longer inspiratory time than the ventilator allows, triggering a second breath immediately after the first with no time for exhalation."
+  },
+  {
+    q: "A dip in the pressure scalar during inspiration WITHOUT changes in the flow scalar indicates:",
+    opts: ["Auto-PEEP", "Flow starvation", "Ineffective trigger", "Delayed cycling"],
+    correct: 1,
+    explain: "Flow starvation shows a characteristic dip/scalloping in the pressure waveform as the patient generates negative pressure demanding more flow, while the flow scalar remains unchanged because the ventilator cannot increase flow beyond the set rate."
+  },
+  {
+    q: "A stress index greater than 1 (upward-curving pressure slope) indicates:",
+    opts: ["Lung recruitment is improving", "Normal compliance", "Possible overdistension", "Decreased airway resistance"],
+    correct: 2,
+    explain: "A stress index >1 means compliance is worsening as volume increases — the lung is approaching its capacity limit and overdistension may be occurring."
+  },
+  {
+    q: "Hysteresis on the pressure-volume loop represents:",
+    opts: ["Equal energy for inflation and deflation", "The difference between PIP and PEEP", "More energy required to inflate than deflate the lung", "Air trapping"],
+    correct: 2,
+    explain: "Hysteresis is the area between the inflation and deflation limbs of the PV loop. It reflects that more energy is needed to open alveoli (inspiration) than to allow them to recoil (expiration), related to surface tension forces."
+  }
+];
+
+let quizScore = 0, quizAnswered = 0;
+
+function initQuiz() {
+  const area = document.getElementById('quizArea');
+  if (area.children.length > 0) return; // already initialized
+  quizScore = 0; quizAnswered = 0;
+  updateScore();
+
+  quizData.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-container';
+    div.innerHTML = `
+      <div class="quiz-question">${qi+1}. ${q.q}</div>
+      <div class="quiz-options" id="qopts-${qi}">
+        ${q.opts.map((o,oi) => `<button class="quiz-option" onclick="answerQuiz(${qi},${oi})">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qfb-${qi}"></div>
+    `;
+    area.appendChild(div);
+  });
+}
+
+function answerQuiz(qi, oi) {
+  const opts = document.querySelectorAll(`#qopts-${qi} .quiz-option`);
+  const fb = document.getElementById(`qfb-${qi}`);
+  const q = quizData[qi];
+
+  if (opts[0].classList.contains('disabled')) return;
+  opts.forEach(o => o.classList.add('disabled'));
+
+  quizAnswered++;
+  if (oi === q.correct) {
+    quizScore++;
+    opts[oi].classList.add('correct');
+    fb.className = 'quiz-feedback show correct-fb';
+    fb.textContent = '✓ Correct! ' + q.explain;
+  } else {
+    opts[oi].classList.add('wrong');
+    opts[q.correct].classList.add('correct');
+    fb.className = 'quiz-feedback show wrong-fb';
+    fb.textContent = '✗ ' + q.explain;
+  }
+  updateScore();
+}
+
+function updateScore() {
+  document.getElementById('quizScore').textContent = `${quizScore} / ${quizAnswered}`;
+}
+
+// ==================== DETAIL OVERLAY ====================
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('show');
+}
+
+// Initialize first tab
+showVolWave('normal');
+showFlowWave('vc');
+showPressWave('pc');
+</script>
+</body>
+</html>

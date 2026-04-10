@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kawasaki Disease — Clinical Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --surface2: #1c2030;
+    --border: #252a3a;
+    --accent: #e8533a;
+    --accent2: #f0a847;
+    --accent3: #4ecdc4;
+    --accent4: #a78bfa;
+    --text: #e8eaf0;
+    --text-dim: #8b90a8;
+    --green: #4ade80;
+    --red: #f87171;
+    --pink: #f9a8d4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d0f14 0%, #1a0a08 60%, #0d0f14 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content:'';
+    position:absolute; top:-80px; right:-80px;
+    width:320px; height:320px;
+    background: radial-gradient(circle, rgba(232,83,58,0.18) 0%, transparent 70%);
+    border-radius:50%;
+  }
+  header::after {
+    content:'';
+    position:absolute; bottom:-60px; left:30%;
+    width:200px; height:200px;
+    background: radial-gradient(circle, rgba(240,168,71,0.12) 0%, transparent 70%);
+    border-radius:50%;
+  }
+  .header-badge {
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.15em;
+    color: var(--accent);
+    background: rgba(232,83,58,0.12);
+    border: 1px solid rgba(232,83,58,0.3);
+    padding:0.3rem 0.8rem;
+    border-radius:2px;
+    margin-bottom:1rem;
+    text-transform:uppercase;
+  }
+  header h1 {
+    font-family:'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight:900;
+    line-height:1.1;
+    background: linear-gradient(135deg, #fff 30%, var(--accent2) 100%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:0.6rem;
+    position:relative;
+  }
+  header p.subtitle {
+    color: var(--text-dim);
+    font-size:0.95rem;
+    font-weight:300;
+    max-width:700px;
+    line-height:1.6;
+    position:relative;
+  }
+  .header-meta {
+    margin-top:1rem;
+    display:flex; gap:1.5rem; flex-wrap:wrap;
+  }
+  .meta-chip {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    color: var(--text-dim);
+    background: var(--surface);
+    border:1px solid var(--border);
+    padding:0.25rem 0.7rem;
+    border-radius:20px;
+  }
+  .meta-chip span { color:var(--accent2); }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display:flex; gap:0; overflow-x:auto;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    position: sticky; top:0; z-index:100;
+  }
+  .tab-bar::-webkit-scrollbar { height:3px; }
+  .tab-bar::-webkit-scrollbar-track { background:var(--surface); }
+  .tab-bar::-webkit-scrollbar-thumb { background:var(--border); }
+  .tab-btn {
+    background:none; border:none;
+    color: var(--text-dim);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:0.82rem;
+    font-weight:500;
+    padding:1rem 1.2rem;
+    cursor:pointer;
+    white-space:nowrap;
+    border-bottom:2px solid transparent;
+    transition:all 0.2s;
+    letter-spacing:0.02em;
+  }
+  .tab-btn:hover { color:var(--text); }
+  .tab-btn.active {
+    color:var(--accent);
+    border-bottom-color:var(--accent);
+  }
+
+  /* ── PANELS ── */
+  .panel { display:none; padding:2rem; max-width:1100px; margin:0 auto; }
+  .panel.active { display:block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family:'Playfair Display', serif;
+    font-size:1.7rem;
+    font-weight:700;
+    margin-bottom:0.4rem;
+    color:var(--text);
+  }
+  .section-title span { color:var(--accent); }
+  .section-intro {
+    color:var(--text-dim);
+    font-size:0.9rem;
+    line-height:1.7;
+    margin-bottom:2rem;
+    max-width:800px;
+  }
+
+  /* ── PHASE CARDS ── */
+  .phases { display:flex; flex-direction:column; gap:1.2rem; }
+  .phase-card {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+    cursor:pointer;
+    transition: border-color 0.2s;
+  }
+  .phase-card:hover { border-color: var(--accent); }
+  .phase-card.open { border-color: var(--accent); }
+  .phase-header {
+    display:flex; align-items:center; gap:1rem;
+    padding:1.2rem 1.4rem;
+    position:relative;
+  }
+  .phase-num {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.65rem;
+    letter-spacing:0.1em;
+    color:var(--accent);
+    background:rgba(232,83,58,0.1);
+    border:1px solid rgba(232,83,58,0.25);
+    padding:0.25rem 0.6rem;
+    border-radius:3px;
+    text-transform:uppercase;
+    flex-shrink:0;
+  }
+  .phase-num.p2 { color:var(--accent2); background:rgba(240,168,71,0.1); border-color:rgba(240,168,71,0.25); }
+  .phase-num.p3 { color:var(--accent4); background:rgba(167,139,250,0.1); border-color:rgba(167,139,250,0.25); }
+  .phase-title-wrap { flex:1 }
+  .phase-title {
+    font-size:1.05rem;
+    font-weight:600;
+    margin-bottom:0.15rem;
+  }
+  .phase-timeline {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--text-dim);
+  }
+  .phase-chevron {
+    color:var(--text-dim);
+    font-size:1.2rem;
+    transition:transform 0.3s;
+    flex-shrink:0;
+  }
+  .phase-card.open .phase-chevron { transform:rotate(180deg); }
+  .phase-body {
+    display:none;
+    padding:0 1.4rem 1.4rem;
+    border-top:1px solid var(--border);
+  }
+  .phase-card.open .phase-body { display:block; }
+
+  .mech-flow {
+    display:flex; flex-wrap:wrap; gap:0.5rem;
+    align-items:center; margin:1rem 0;
+  }
+  .mech-box {
+    background: var(--surface2);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:0.5rem 0.8rem;
+    font-size:0.82rem;
+    line-height:1.4;
+    max-width:200px;
+  }
+  .mech-arrow { color:var(--accent); font-size:1.1rem; }
+  .mech-box.highlight { border-color:var(--accent3); background:rgba(78,205,196,0.07); }
+  .mech-box.red { border-color:var(--red); background:rgba(248,113,113,0.07); }
+  .mech-box.amber { border-color:var(--accent2); background:rgba(240,168,71,0.07); }
+
+  .clinical-badges {
+    display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem;
+  }
+  .cbadge {
+    font-size:0.77rem;
+    padding:0.3rem 0.75rem;
+    border-radius:20px;
+    font-weight:500;
+    border:1px solid;
+  }
+  .cbadge.green { color:var(--green); border-color:rgba(74,222,128,0.35); background:rgba(74,222,128,0.08); }
+  .cbadge.amber { color:var(--accent2); border-color:rgba(240,168,71,0.35); background:rgba(240,168,71,0.08); }
+  .cbadge.red { color:var(--red); border-color:rgba(248,113,113,0.35); background:rgba(248,113,113,0.08); }
+  .cbadge.purple { color:var(--accent4); border-color:rgba(167,139,250,0.35); background:rgba(167,139,250,0.08); }
+  .cbadge.teal { color:var(--accent3); border-color:rgba(78,205,196,0.35); background:rgba(78,205,196,0.08); }
+
+  .insight-box {
+    margin-top:1rem;
+    background: rgba(78,205,196,0.06);
+    border-left: 3px solid var(--accent3);
+    border-radius: 0 6px 6px 0;
+    padding: 0.9rem 1rem;
+    font-size:0.85rem;
+    color:var(--text-dim);
+    line-height:1.6;
+  }
+  .insight-box strong { color:var(--accent3); }
+
+  /* ── CLINICAL FEATURES GRID ── */
+  .features-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap:1rem;
+    margin-top:1.5rem;
+  }
+  .feat-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .feat-card:hover { border-color:var(--accent2); transform:translateY(-2px); }
+  .feat-icon { font-size:1.6rem; margin-bottom:0.6rem; }
+  .feat-title { font-weight:600; font-size:0.95rem; margin-bottom:0.4rem; }
+  .feat-mech { font-size:0.8rem; color:var(--text-dim); line-height:1.5; margin-bottom:0.6rem; }
+  .feat-link {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    color:var(--accent3);
+    letter-spacing:0.05em;
+  }
+  .feat-note {
+    font-size:0.75rem;
+    color:var(--accent2);
+    margin-top:0.4rem;
+    padding:0.25rem 0.5rem;
+    background:rgba(240,168,71,0.08);
+    border-radius:4px;
+    display:inline-block;
+  }
+
+  /* ── DIAGNOSIS ── */
+  .diag-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;
+    margin-top:1.5rem;
+  }
+  @media(max-width:640px){ .diag-grid { grid-template-columns:1fr; } }
+  .diag-box {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:1.4rem;
+  }
+  .diag-box h3 {
+    font-size:1rem; font-weight:600;
+    margin-bottom:1rem;
+    padding-bottom:0.6rem;
+    border-bottom:1px solid var(--border);
+  }
+  .crit-item {
+    display:flex; align-items:flex-start; gap:0.6rem;
+    margin-bottom:0.7rem;
+    font-size:0.85rem;
+    line-height:1.5;
+  }
+  .crit-dot {
+    width:8px; height:8px;
+    border-radius:50%;
+    background:var(--accent);
+    flex-shrink:0;
+    margin-top:5px;
+  }
+  .crit-dot.amber { background:var(--accent2); }
+  .crit-dot.teal { background:var(--accent3); }
+
+  .z-table { width:100%; border-collapse:collapse; margin-top:1rem; font-size:0.82rem; }
+  .z-table th {
+    background:var(--surface2);
+    padding:0.6rem 0.8rem;
+    text-align:left;
+    font-weight:600;
+    color:var(--text-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.05em;
+    border-bottom:1px solid var(--border);
+  }
+  .z-table td {
+    padding:0.5rem 0.8rem;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    vertical-align:top;
+  }
+  .z-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .zscore { font-family:'IBM Plex Mono', monospace; font-weight:600; }
+  .cat-small { color:var(--green); }
+  .cat-med { color:var(--accent2); }
+  .cat-large { color:var(--red); }
+  .cat-giant { color:#f472b6; }
+
+  /* ── MANAGEMENT FLOW ── */
+  .mgmt-flow {
+    display:flex; flex-direction:column; gap:0;
+    position:relative; margin-top:1.5rem;
+  }
+  .mgmt-step {
+    display:flex; gap:1.2rem;
+    position:relative;
+  }
+  .mgmt-step::before {
+    content:'';
+    position:absolute; left:17px; top:40px;
+    width:2px; height:calc(100% + 1px);
+    background:var(--border);
+    z-index:0;
+  }
+  .mgmt-step:last-child::before { display:none; }
+  .step-node {
+    width:36px; height:36px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600; font-size:0.85rem;
+    flex-shrink:0;
+    position:relative; z-index:1;
+    margin-top:0.8rem;
+  }
+  .step-node.s1 { background:rgba(232,83,58,0.2); border:2px solid var(--accent); color:var(--accent); }
+  .step-node.s2 { background:rgba(240,168,71,0.2); border:2px solid var(--accent2); color:var(--accent2); }
+  .step-node.s3 { background:rgba(78,205,196,0.2); border:2px solid var(--accent3); color:var(--accent3); }
+  .step-node.s4 { background:rgba(167,139,250,0.2); border:2px solid var(--accent4); color:var(--accent4); }
+  .step-content {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:1.2rem;
+    flex:1; margin-bottom:1rem;
+  }
+  .step-content h3 { font-size:0.97rem; font-weight:600; margin-bottom:0.5rem; }
+  .step-content p { font-size:0.85rem; color:var(--text-dim); line-height:1.6; }
+  .drug-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.8rem; }
+  .dtag {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    padding:0.25rem 0.7rem;
+    border-radius:4px;
+    border:1px solid;
+  }
+  .dtag.primary { color:var(--accent); border-color:rgba(232,83,58,0.35); background:rgba(232,83,58,0.08); }
+  .dtag.secondary { color:var(--accent2); border-color:rgba(240,168,71,0.35); background:rgba(240,168,71,0.08); }
+  .dtag.tertiary { color:var(--accent3); border-color:rgba(78,205,196,0.35); background:rgba(78,205,196,0.08); }
+  .dtag.purple { color:var(--accent4); border-color:rgba(167,139,250,0.35); background:rgba(167,139,250,0.08); }
+
+  /* ── EVIDENCE ── */
+  .evidence-grid {
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap:1rem; margin-top:1.5rem;
+  }
+  .ev-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:1.3rem;
+    transition:border-color 0.2s;
+  }
+  .ev-card:hover { border-color:var(--accent2); }
+  .ev-tag {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.65rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    padding:0.2rem 0.6rem;
+    border-radius:3px;
+    display:inline-block;
+    margin-bottom:0.7rem;
+  }
+  .ev-tag.rct { color:var(--green); background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25); }
+  .ev-tag.meta { color:var(--accent2); background:rgba(240,168,71,0.1); border:1px solid rgba(240,168,71,0.25); }
+  .ev-tag.guideline { color:var(--accent3); background:rgba(78,205,196,0.1); border:1px solid rgba(78,205,196,0.25); }
+  .ev-tag.cohort { color:var(--accent4); background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.25); }
+  .ev-card h3 { font-size:0.9rem; font-weight:600; margin-bottom:0.5rem; line-height:1.4; }
+  .ev-card p { font-size:0.82rem; color:var(--text-dim); line-height:1.6; }
+  .ev-card .citation {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    color:var(--text-dim);
+    margin-top:0.8rem;
+    padding-top:0.6rem;
+    border-top:1px solid var(--border);
+    opacity:0.7;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:600px){
+    header { padding:1.5rem 1rem 1.2rem; }
+    .panel { padding:1rem; }
+    .mech-flow { flex-direction:column; align-items:flex-start; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+  /* INCOMPLETE KD BOX */
+  .ikd-box {
+    background:rgba(240,168,71,0.06);
+    border:1px solid rgba(240,168,71,0.25);
+    border-radius:10px;
+    padding:1.2rem 1.4rem;
+    margin-top:1.5rem;
+  }
+  .ikd-box h3 { font-size:1rem; font-weight:600; color:var(--accent2); margin-bottom:0.6rem; }
+  .ikd-box p { font-size:0.85rem; color:var(--text-dim); line-height:1.6; }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:1.5rem; }
+  @media(max-width:640px){ .two-col { grid-template-columns:1fr; } }
+  .info-block {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:1.3rem;
+  }
+  .info-block h3 {
+    font-size:0.9rem; font-weight:600;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-family:'IBM Plex Mono', monospace;
+    margin-bottom:0.9rem;
+    padding-bottom:0.6rem;
+    border-bottom:1px solid var(--border);
+  }
+  .info-block li { font-size:0.85rem; line-height:1.7; color:var(--text-dim); list-style:none; padding-left:0; }
+  .info-block li::before { content:'→ '; color:var(--accent); }
+
+  .pill-label {
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    font-weight:600;
+    color:var(--accent2);
+    background:rgba(240,168,71,0.1);
+    border:1px solid rgba(240,168,71,0.2);
+    padding:0.15rem 0.5rem;
+    border-radius:3px;
+    margin-right:0.4rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Pediatric Vasculitis · Clinical Explainer</div>
+  <h1>Kawasaki Disease</h1>
+  <p class="subtitle">Pathophysiology mapped to clinical presentation and evidence-based management — structured for clinical teaching and presentation prep.</p>
+  <div class="header-meta">
+    <div class="meta-chip">AHA 2024 Scientific Statement <span>updated</span></div>
+    <div class="meta-chip">ACR/VF 2021 Guidelines</div>
+    <div class="meta-chip">Most common cause of <span>acquired pediatric heart disease</span> in developed countries</div>
+  </div>
+</header>
+
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('patho')">🔬 Pathophysiology</button>
+  <button class="tab-btn" onclick="showTab('clinical')">🩺 Clinical Features</button>
+  <button class="tab-btn" onclick="showTab('diagnosis')">📋 Diagnosis</button>
+  <button class="tab-btn" onclick="showTab('management')">💊 Management</button>
+  <button class="tab-btn" onclick="showTab('evidence')">📄 Recent Evidence</button>
+</nav>
+
+<!-- ══════════════════ PATHOPHYSIOLOGY ══════════════════ -->
+<div id="patho" class="panel active">
+  <p class="section-title">Pathophysiology: <span>3 Sequential Phases</span></p>
+  <p class="section-intro">KD involves a dysregulated immune response to an environmental/infectious trigger in genetically susceptible children. The cascade progresses through three mechanistically distinct phases — each with distinct clinical and cardiac consequences.</p>
+
+  <div class="phases">
+
+    <!-- PHASE 1 -->
+    <div class="phase-card open" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <span class="phase-num">Phase 1</span>
+        <div class="phase-title-wrap">
+          <div class="phase-title">Acute Phase — Innate Immune Activation</div>
+          <div class="phase-timeline">Days 0–10 · Fever onset to peak inflammation</div>
+        </div>
+        <span class="phase-chevron">▾</span>
+      </div>
+      <div class="phase-body">
+        <p style="font-size:0.87rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">
+          An external trigger (possibly a respiratory pathogen, airborne antigen, or particulate matter) activates innate immune cells in genetically susceptible hosts — particularly those carrying variants in <strong>FCGR2A</strong> (Fcγ receptor IIa) and <strong>CASP3</strong> (apoptosis regulator). This leads to inappropriate activation of macrophages, neutrophils, and NK cells concentrated around <em>medium-sized arteries</em>, especially the coronary arteries.
+        </p>
+        <div class="mech-flow">
+          <div class="mech-box">Innate immune cells activate around coronary adventitia</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box">Neutrophils infiltrate tunica adventitia (outer vessel wall)</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box amber">Local cytokine release (IL-1β, IL-6, TNF-α)</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box red">Coronary arteritis + systemic cytokine storm</div>
+        </div>
+        <div class="mech-flow">
+          <div class="mech-box highlight">Cytokines enter systemic circulation</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box">Inflammation of tunica media &amp; intima</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box red">Patchy destruction of all 3 vessel layers (necrotizing arteritis) — wall integrity temporarily preserved</div>
+        </div>
+        <div class="clinical-badges">
+          <span class="cbadge green">Fever ≥5 days (hypothalamic disruption)</span>
+          <span class="cbadge green">Bilateral conjunctival injection (small vessel activation)</span>
+          <span class="cbadge green">Strawberry tongue / cracked lips (mucosal inflammation)</span>
+          <span class="cbadge green">Cervical lymphadenopathy (immune cell infiltration)</span>
+          <span class="cbadge green">Non-vesicular polymorphic rash</span>
+          <span class="cbadge red">Early coronary changes on echo (coronary arteritis)</span>
+        </div>
+        <div class="insight-box">
+          <strong>Clinical link:</strong> Myocarditis and pericarditis are also seen in this phase due to immune cell infiltration into myocardial and pericardial tissue via the same cytokine storm. NT-proBNP elevation in this phase is a marker of cardiac involvement and — importantly — a predictor of IVIG resistance.
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-card" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <span class="phase-num p2">Phase 2</span>
+        <div class="phase-title-wrap">
+          <div class="phase-title">Subacute Phase — Adaptive Immunity & Vasculitis</div>
+          <div class="phase-timeline">Weeks 2–4 · Fever resolution to 8 weeks</div>
+        </div>
+        <span class="phase-chevron">▾</span>
+      </div>
+      <div class="phase-body">
+        <p style="font-size:0.87rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">
+          As innate responses wane, adaptive immune cells (eosinophils, plasma cells, lymphocytes) take over ongoing vascular inflammation. The structural damage now becomes critical — vessel walls lose integrity. Simultaneously, systemic inflammation drives bone marrow megakaryocyte proliferation.
+        </p>
+        <div class="mech-flow">
+          <div class="mech-box">Adaptive immune cells drive ongoing inflammation</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box red">Extensive destruction of intima, media, elastic lamina &amp; smooth muscle</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box red">Vessel walls lose structural integrity</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box red">Coronary artery aneurysm formation</div>
+        </div>
+        <div class="mech-flow">
+          <div class="mech-box">Systemic inflammation → megakaryocyte proliferation in marrow</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box amber">Thrombocytosis (↑ platelet count)</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box red">Damaged vessels + high platelets → thrombus → Acute MI</div>
+        </div>
+        <div class="mech-flow">
+          <div class="mech-box">Inflammation damages dermis &amp; epidermis</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box">Gradual edema resolution</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box highlight">Periungual desquamation (peeling around nails)</div>
+        </div>
+        <div class="clinical-badges">
+          <span class="cbadge amber">Coronary artery aneurysm (CAA)</span>
+          <span class="cbadge amber">Thrombocytosis (peak ~3 weeks)</span>
+          <span class="cbadge purple">Periungual desquamation — pathognomonic timing</span>
+          <span class="cbadge red">Risk of acute MI if giant aneurysm + thrombus</span>
+        </div>
+        <div class="insight-box">
+          <strong>Why aspirin matters here:</strong> High-dose aspirin targets the acute inflammatory phase (anti-inflammatory), but as fever resolves and thrombocytosis peaks, the dose is reduced to antiplatelet (3–5 mg/kg/day) specifically to counter the prothrombotic milieu of damaged vessels + high platelet counts.
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-card" onclick="togglePhase(this)">
+      <div class="phase-header">
+        <span class="phase-num p3">Phase 3</span>
+        <div class="phase-title-wrap">
+          <div class="phase-title">Luminal Myofibroblast Infiltration — Chronic Sequelae</div>
+          <div class="phase-timeline">Weeks to months · Chronic healing phase</div>
+        </div>
+        <span class="phase-chevron">▾</span>
+      </div>
+      <div class="phase-body">
+        <p style="font-size:0.87rem;color:var(--text-dim);line-height:1.7;margin-bottom:1rem;">
+          During the healing phase, inflammatory infiltrates in vessel walls are replaced by myofibroblasts — cells that proliferate and thicken the tunica intima. This leads to luminal narrowing of affected arteries. The coronary arteries are most vulnerable. This phase explains why KD can cause ischemic events even <em>years after the acute illness</em>.
+        </p>
+        <div class="mech-flow">
+          <div class="mech-box">Inflammatory infiltrates replaced by myofibroblasts</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box">Myofibroblast proliferation thickens intima</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box amber">Coronary arteries become narrowed (stenosis)</div>
+          <span class="mech-arrow">→</span>
+          <div class="mech-box red">↓ Baseline perfusion → demand ischemia on exertion</div>
+        </div>
+        <div class="clinical-badges">
+          <span class="cbadge purple">Coronary artery stenosis</span>
+          <span class="cbadge red">Exertional chest pain / dyspnea</span>
+          <span class="cbadge red">Exercise intolerance</span>
+          <span class="cbadge red">Arrhythmias (electrically unstable ischemic myocardium)</span>
+        </div>
+        <div class="insight-box">
+          <strong>Long-term surveillance:</strong> Even after apparent clinical resolution, patients with prior coronary involvement require echocardiographic surveillance indefinitely. Those with giant aneurysms (Z-score ≥10) may develop stenosis decades later — a well-described cause of MI in young adults.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════ CLINICAL FEATURES ══════════════════ -->
+<div id="clinical" class="panel">
+  <p class="section-title">Clinical Features: <span>Mechanism-to-Bedside</span></p>
+  <p class="section-intro">Each clinical feature maps to a specific pathophysiological mechanism. Understanding the "why" behind each sign helps you reason through incomplete presentations and avoid diagnostic error.</p>
+
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">🌡️</div>
+      <div class="feat-title">Fever ≥5 days</div>
+      <div class="feat-mech">Systemic cytokines (IL-1β, IL-6, TNF-α) disrupt hypothalamic thermoregulation. High, remittent, unresponsive to antibiotics.</div>
+      <div class="feat-link">↑ Mechanism: Cytokine storm → hypothalamic reset</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">👁️</div>
+      <div class="feat-title">Bilateral Non-Exudative Conjunctivitis</div>
+      <div class="feat-mech">Small vessel activation and immune cell infiltration of bulbar conjunctivae. Crucially non-exudative — absence of discharge distinguishes KD from bacterial/viral conjunctivitis.</div>
+      <div class="feat-link">↑ Mechanism: Endothelial activation → perivascular infiltration</div>
+      <div class="feat-note">⚠ Uveitis in ~70% — slit-lamp exam underperformed</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">👄</div>
+      <div class="feat-title">Oral / Mucosal Changes</div>
+      <div class="feat-mech">Cytokines cause plasma leakage and perivascular infiltration of skin and mucosa. Results in strawberry tongue (erythematous papillae), cracked/fissured lips, and diffuse oropharyngeal erythema.</div>
+      <div class="feat-link">↑ Mechanism: Blood flow ↑, vessel permeability ↑ in mucosa</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🖐️</div>
+      <div class="feat-title">Erythema / Edema of Hands &amp; Feet</div>
+      <div class="feat-mech">Endothelial activation in small vessels of peripheries → plasma leakage → pitting edema. Palmar and plantar erythema. In the subacute phase, resolving edema causes periungual desquamation.</div>
+      <div class="feat-link">↑ Mechanism: Endothelial permeability → tissue edema</div>
+      <div class="feat-note">Periungual peeling = subacute phase marker (Week 2–4)</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔴</div>
+      <div class="feat-title">Polymorphous Rash</div>
+      <div class="feat-mech">Non-specific maculopapular or morbilliform rash reflecting diffuse cutaneous vasculitis. Not vesicular. Common in perineal region (often overlooked — check the groin).</div>
+      <div class="feat-link">↑ Mechanism: Dermal/epidermal immune cell infiltration</div>
+      <div class="feat-note">⚠ Perineal involvement — exam under-done</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔵</div>
+      <div class="feat-title">Cervical Lymphadenopathy</div>
+      <div class="feat-mech">Immune cell infiltration into cervical lymph nodes. Typically unilateral, ≥1.5 cm, non-purulent. Often the least common criterion (~50%), sometimes absent in incomplete KD.</div>
+      <div class="feat-link">↑ Mechanism: Immune cell trafficking to regional nodes</div>
+      <div class="feat-note">Least common of the 5 criteria</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">❤️</div>
+      <div class="feat-title">Myocarditis / Pericarditis</div>
+      <div class="feat-mech">Immune cells infiltrate myocardial and pericardial tissue in acute phase. May manifest as tachycardia disproportionate to fever, gallop rhythm, or elevated troponin.</div>
+      <div class="feat-link">↑ Mechanism: Cytokine-mediated cardiac infiltration</div>
+      <div class="feat-note">Echo: may show pericardial effusion, LV dysfunction</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🫀</div>
+      <div class="feat-title">Coronary Artery Aneurysm</div>
+      <div class="feat-mech">Most feared complication. Structural failure of vessel wall due to adaptive immune-mediated destruction. Untreated KD: ~25%. With IVIG: ~4–5%. Giant aneurysm (≥8mm) carries lifelong ischemia risk.</div>
+      <div class="feat-link">↑ Mechanism: Wall destruction → dilation → aneurysm</div>
+      <div class="feat-note">Z-score ≥2.5 = coronary artery lesion (AHA 2024)</div>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top:1.5rem;">
+    <div class="info-block">
+      <h3>Atypical / Incomplete KD — Red Flags</h3>
+      <ul>
+        <li>Infants &lt;6 months — less classic features, higher CAA risk</li>
+        <li>Children &gt;5 years — fever + unexplained CRP elevation</li>
+        <li>Fever &gt;7 days + ≥2 criteria + elevated inflammatory markers</li>
+        <li>Hydrops of gallbladder (10–15%) — mimics surgical abdomen</li>
+        <li>Arthritis, aseptic meningitis, urethritis</li>
+        <li>Unexplained thrombocytosis in second week of febrile illness</li>
+      </ul>
+    </div>
+    <div class="info-block">
+      <h3>KD Shock Syndrome (KDSS)</h3>
+      <ul>
+        <li>~5% of KD — systolic hypotension or poor perfusion</li>
+        <li>Higher rates of IVIG resistance and CAA</li>
+        <li>Often clinically mistaken for septic shock</li>
+        <li>Mechanism: cytokine-mediated myocardial depression + capillary leak</li>
+        <li>Consider KD in hypotensive febrile child with mucocutaneous signs</li>
+        <li>May require inotropic support before/alongside IVIG</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ DIAGNOSIS ══════════════════ -->
+<div id="diagnosis" class="panel">
+  <p class="section-title">Diagnosis: <span>Classic, Incomplete & Coronary Stratification</span></p>
+  <p class="section-intro">KD remains a <em>clinical diagnosis</em>. No single laboratory test is diagnostic. AHA 2024 updated the approach to incomplete KD and Z-score-based coronary classification.</p>
+
+  <div class="diag-grid">
+    <div class="diag-box">
+      <h3 style="color:var(--accent)">Classic KD Criteria</h3>
+      <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;padding:0.5rem 0.8rem;background:rgba(232,83,58,0.07);border-radius:6px;">
+        Fever ≥5 days + ≥4 of 5 principal features<br>
+        <em style="color:var(--text-dim);font-size:0.75rem;">(experienced clinicians may diagnose with fever + ≥4 features before day 5)</em>
+      </div>
+      <div class="crit-item"><span class="crit-dot"></span><div>Bilateral non-exudative bulbar conjunctival injection</div></div>
+      <div class="crit-item"><span class="crit-dot"></span><div>Changes of oral mucosa — strawberry tongue, cracked lips, erythema</div></div>
+      <div class="crit-item"><span class="crit-dot"></span><div>Polymorphous non-vesicular rash</div></div>
+      <div class="crit-item"><span class="crit-dot"></span><div>Erythema and/or edema of hands and feet (acute); periungual desquamation (subacute)</div></div>
+      <div class="crit-item"><span class="crit-dot"></span><div>Unilateral cervical lymphadenopathy ≥1.5 cm, usually non-purulent</div></div>
+    </div>
+    <div class="diag-box">
+      <h3 style="color:var(--accent2)">Incomplete KD (AHA 2024)</h3>
+      <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:1rem;padding:0.5rem 0.8rem;background:rgba(240,168,71,0.07);border-radius:6px;">
+        Fever ≥5 days + 2–3 criteria + supportive laboratory OR echocardiographic findings
+      </div>
+      <div class="crit-item"><span class="crit-dot amber"></span><div>CRP ≥3.0 mg/dL AND/OR ESR ≥40 mm/hr</div></div>
+      <div class="crit-item"><span class="crit-dot amber"></span><div>ALT elevation, albumin &lt;3.0 g/dL, WBC ≥15,000/mm³</div></div>
+      <div class="crit-item"><span class="crit-dot amber"></span><div>Urinalysis: ≥10 WBC/hpf (sterile pyuria)</div></div>
+      <div class="crit-item"><span class="crit-dot amber"></span><div>Anaemia for age, platelet ≥450,000 after Day 7</div></div>
+      <div class="crit-item"><span class="crit-dot amber"></span><div>Echo: coronary Z-score ≥2.5, LAD or RCA dilation, ↓ LV function, mitral regurgitation</div></div>
+      <div class="insight-box" style="margin-top:0.6rem;">
+        <strong>Key point:</strong> Infants &lt;6 months have highest rate of incomplete presentation AND highest risk of CAA — maintain low threshold for echo and empiric treatment.
+      </div>
+    </div>
+  </div>
+
+  <div class="diag-box" style="margin-top:1.5rem;">
+    <h3 style="color:var(--accent3)">Coronary Artery Classification — AHA 2017/2024 Z-Score System</h3>
+    <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:1rem;line-height:1.6;">Z-scores normalize coronary artery dimensions to body surface area, replacing absolute mm thresholds. Serial echo: at diagnosis, 1–2 weeks, 4–6 weeks, and as needed.</p>
+    <table class="z-table">
+      <thead>
+        <tr>
+          <th>Z-Score</th>
+          <th>Classification</th>
+          <th>Risk Level</th>
+          <th>Follow-up / Antiplatelet</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="zscore cat-small">&lt; 2.0</td>
+          <td>Normal</td>
+          <td style="color:var(--green)">None</td>
+          <td>Echo at 4–6 weeks; no long-term if normal</td>
+        </tr>
+        <tr>
+          <td class="zscore" style="color:#a3e635;">2.0–2.4</td>
+          <td>Dilation (Z-score in reference range upper limit)</td>
+          <td style="color:#a3e635;">Low</td>
+          <td>Continue aspirin; repeat echo at 4–6 weeks</td>
+        </tr>
+        <tr>
+          <td class="zscore cat-med;">2.5–4.9</td>
+          <td>Small Aneurysm</td>
+          <td style="color:var(--accent2)">Moderate</td>
+          <td>Low-dose aspirin; echo every 3–6 months</td>
+        </tr>
+        <tr>
+          <td class="zscore" style="color:#fb923c;">5.0–9.9</td>
+          <td>Medium Aneurysm</td>
+          <td style="color:#fb923c;">High</td>
+          <td>Aspirin ± anticoagulation; echo q3months; stress test</td>
+        </tr>
+        <tr>
+          <td class="zscore cat-giant;">≥ 10 (or &gt;8mm absolute)</td>
+          <td>Giant Aneurysm</td>
+          <td style="color:#f472b6">Very High</td>
+          <td>Dual antiplatelet + anticoagulation (LMWH/warfarin); cardiology referral; lifelong surveillance</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ikd-box">
+    <h3>⚠ Key Differentials to Exclude</h3>
+    <p>Viral exanthems (measles, adenovirus, EBV — check Paul-Bunnell), scarlet fever (exudative pharyngitis, sandpaper rash — check ASOT), toxic shock syndrome (hypotension, multisystem involvement — check cultures), Stevens-Johnson syndrome (mucosal blistering), drug hypersensitivity reactions, systemic JIA (quotidian fever, arthritis, salmon rash), MIS-C (COVID-associated; older children; GI predominance; often IVIG-resistant — cytokine profile overlaps).</p>
+  </div>
+</div>
+
+<!-- ══════════════════ MANAGEMENT ══════════════════ -->
+<div id="management" class="panel">
+  <p class="section-title">Management: <span>Acute to Long-Term</span></p>
+  <p class="section-intro">Treatment targets the acute inflammatory cascade to prevent coronary artery aneurysms. The window for maximum efficacy is within the first 10 days of fever — ideally within 7 days.</p>
+
+  <div class="mgmt-flow">
+
+    <div class="mgmt-step">
+      <div class="step-node s1">1</div>
+      <div class="step-content">
+        <h3>First-Line: IVIG + High-Dose Aspirin <span style="font-size:0.78rem;color:var(--text-dim);font-weight:400;margin-left:0.5rem;">Day 1–7 of fever</span></h3>
+        <p>IVIG 2 g/kg as a single infusion over 10–12 hours is the cornerstone of treatment. Mechanism: modulates Fc receptor signalling, suppresses T-cell activation, reduces cytokine production, and neutralises pathogenic antibodies. High-dose aspirin (30–50 mg/kg/day in some guidelines; 80–100 mg/kg/day in older Japanese protocols) has anti-inflammatory effect in acute phase.</p>
+        <div class="drug-tags">
+          <span class="dtag primary">IVIG 2 g/kg IV (single dose)</span>
+          <span class="dtag secondary">Aspirin 30–50 mg/kg/day (acute phase)</span>
+          <span class="dtag secondary">→ Step down to 3–5 mg/kg/day once afebrile for 48–72h</span>
+        </div>
+        <div class="insight-box" style="margin-top:0.8rem;">
+          <strong>Timing is critical:</strong> Treatment ≤10 days of fever reduces CAA from ~25% to ~4–5%. However, treatment &gt;10 days is still indicated if evidence of ongoing inflammation (elevated CRP/ESR) or aneurysm development.
+        </div>
+      </div>
+    </div>
+
+    <div class="mgmt-step">
+      <div class="step-node s2">2</div>
+      <div class="step-content">
+        <h3>IVIG Resistance — Identification & Second-Line <span style="font-size:0.78rem;color:var(--text-dim);font-weight:400;margin-left:0.5rem;">~10–20% of patients</span></h3>
+        <p>Defined as persistent or recurrent fever ≥36 hours after IVIG completion. Risk stratification using <strong>Kobayashi</strong>, <strong>Egami</strong>, or <strong>Sano</strong> scoring (developed in Japanese cohorts; moderate performance in non-Asian populations). Predictors include: elevated CRP/albumin ratio (CAR), hypoalbuminaemia &lt;32 g/L, NT-proBNP &gt;1300 pg/mL, neutrophil-to-lymphocyte ratio ≥3.5, total bilirubin ≥0.9 mg/dL, and age &lt;12 months.</p>
+        <div class="drug-tags">
+          <span class="dtag secondary">2nd dose IVIG 2 g/kg (AHA 2024: reasonable choice)</span>
+          <span class="dtag primary">Infliximab 5 mg/kg IV (TNF-α inhibitor)</span>
+          <span class="dtag tertiary">Prednisolone + IVIG (RAISE trial: ↓ CAA in high-risk)</span>
+        </div>
+        <div class="insight-box" style="margin-top:0.8rem;">
+          <strong>AHA 2024 position:</strong> Second IVIG dose is a reasonable first choice. Infliximab and corticosteroids (prednisolone + IVIG) are acceptable alternatives. ACR/VF 2021 conditionally recommends second IVIG over steroids — but allows biologics for patients at risk of IVIG-induced haemolytic anaemia.
+        </div>
+      </div>
+    </div>
+
+    <div class="mgmt-step">
+      <div class="step-node s3">3</div>
+      <div class="step-content">
+        <h3>Refractory KD — Third-Line Biologics <span style="font-size:0.78rem;color:var(--text-dim);font-weight:400;margin-left:0.5rem;">Resistant to ≥2 IVIG doses</span></h3>
+        <p>For patients failing second IVIG ± steroids, escalation to cytokine-targeted biologics is used. Evidence base is limited to case series and small RCTs.</p>
+        <div class="drug-tags">
+          <span class="dtag purple">Anakinra (IL-1Ra) — particularly for MIS-C overlap</span>
+          <span class="dtag purple">Cyclosporine — inhibits calcineurin/T-cell activation</span>
+          <span class="dtag purple">Methylprednisolone pulse (30 mg/kg IV × 3 days)</span>
+          <span class="dtag purple">Canakinumab (anti-IL-1β) — case series only</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mgmt-step">
+      <div class="step-node s4">4</div>
+      <div class="step-content">
+        <h3>Long-Term Management Based on Coronary Risk Stratification</h3>
+        <p>Ongoing management depends entirely on coronary artery Z-scores at 4–6 weeks. Low-dose aspirin is continued until coronary normalisation confirmed. Giant aneurysms require dual antiplatelet ± anticoagulation (warfarin or LMWH) and lifelong cardiac follow-up.</p>
+        <div class="drug-tags">
+          <span class="dtag tertiary">Z &lt;2.5: Aspirin until normalised echo (4–6 wks)</span>
+          <span class="dtag secondary">Z 2.5–9.9: Low-dose aspirin ± anticoagulation</span>
+          <span class="dtag primary">Z ≥10 (Giant): Aspirin + anticoagulation + cardiology</span>
+        </div>
+        <div class="insight-box" style="margin-top:0.8rem;">
+          <strong>Echocardiography timing:</strong> Baseline (diagnosis), repeat at 1–2 weeks, 4–6 weeks, and as clinically indicated. If giant aneurysm, consider stress echocardiography / coronary CT angiography for anatomical delineation.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════ EVIDENCE ══════════════════ -->
+<div id="evidence" class="panel">
+  <p class="section-title">Recent Evidence: <span>2021–2024</span></p>
+  <p class="section-intro">Key updates from clinical trials, guidelines, and cohort studies shaping modern KD management.</p>
+
+  <div class="evidence-grid">
+    <div class="ev-card">
+      <span class="ev-tag guideline">AHA 2024 Statement</span>
+      <h3>Updated Diagnosis &amp; Management of KD</h3>
+      <p>Jone et al., <em>Circulation</em> 2024;150(23):e481-e500. Updates diagnostic criteria, reinforces Z-score based coronary classification (replacing absolute mm thresholds), clarifies IVIG-resistance management pathways. Affirms second IVIG dose as reasonable first choice, lists corticosteroids and infliximab as acceptable alternatives. Emphasises MIS-C differentiation from KD.</p>
+      <div class="citation">Circulation. 2024;150(23):e481–e500</div>
+    </div>
+
+    <div class="ev-card">
+      <span class="ev-tag guideline">ACR/VF Guideline</span>
+      <h3>2021 ACR/Vasculitis Foundation KD Management Guideline</h3>
+      <p>Gorelik et al., <em>Arthritis Care Res</em> 2022. Conditional recommendation: second IVIG dose over steroids for IVIG-resistant KD. However, allows nonglucocorticoid immunomodulatory therapy (infliximab) as alternative, especially if IVIG-induced haemolytic anaemia is a risk. First North American society guidelines specifically for KD management escalation.</p>
+      <div class="citation">Arthritis Care Res. 2022;74(4):538–548</div>
+    </div>
+
+    <div class="ev-card">
+      <span class="ev-tag rct">RCT</span>
+      <h3>RAISE Trial — Corticosteroids in High-Risk KD</h3>
+      <p>Japanese RCT demonstrating that prednisolone + IVIG (versus IVIG alone) in high-risk KD (Kobayashi score ≥5) significantly reduced coronary artery abnormalities at 4 weeks (4% vs 23%). This evidence underpins the use of corticosteroids as primary co-treatment (not just rescue) in high-risk patients — a practice more widely adopted in Japan than the West.</p>
+      <div class="citation">Lancet. 2012;379(9826):1613–1620 · Updated evidence in 2020–24 cohorts</div>
+    </div>
+
+    <div class="ev-card">
+      <span class="ev-tag meta">Meta-analysis</span>
+      <h3>Biologics for IVIG-Resistant KD</h3>
+      <p>Nomura et al., <em>Semin Arthritis Rheum</em> 2021. Systematic review of monoclonal antibodies and anti-cytokine biologics. Infliximab (anti-TNF-α) shown to have fastest fever resolution post-IVIG failure. Anakinra (IL-1Ra) promising — especially in MIS-C overlap, which shares cytokine profile. Canakinumab used in refractory cases with giant aneurysm.</p>
+      <div class="citation">Semin Arthritis Rheum. 2021;51(5):1045–1056</div>
+    </div>
+
+    <div class="ev-card">
+      <span class="ev-tag cohort">Cohort 2024</span>
+      <h3>CBC-Derived Markers for IVIG Resistance Prediction</h3>
+      <p>Korean cohort (n=261 infants), <em>Pediatric Rheumatology</em> 2025. Monocyte-to-lymphocyte ratio (MLR) showed highest predictive accuracy for IVIG resistance (AUC 0.776), outperforming classic scoring tools. NLR ≥3.5 (aOR 25.0) and total bilirubin ≥0.9 mg/dL (aOR 3.51) independently predict resistance. IVIG resistance rate in infants: 25.7% — higher than older children.</p>
+      <div class="citation">Ped Rheumatol. 2025 · Kobayashi/Egami/Sano validated: BMC Pediatr 2024;24:606</div>
+    </div>
+
+    <div class="ev-card">
+      <span class="ev-tag meta">Systematic Review</span>
+      <h3>CRP:Albumin Ratio (CAR) as IVIG Resistance Predictor</h3>
+      <p>Liu et al., <em>Pediatric Rheumatology</em> 2024. CAR demonstrated moderate diagnostic value for IVIG resistance prediction. Pre-treatment hypoalbuminaemia (&lt;32 g/L) and markedly elevated CRP (&gt;100 mg/dL) independently predict IVIG non-response. Albumin also a marker of disease severity and vascular permeability — mechanistically tied to cytokine-mediated capillary leak.</p>
+      <div class="citation">Pediatr Rheumatol. 2024;22:42</div>
+    </div>
+
+    <div class="ev-card">
+      <span class="ev-tag cohort">Evidence Update 2025</span>
+      <h3>IVIG Resistance Prevalence: Systematic Review</h3>
+      <p>Meta-analysis (PubMed/Cochrane/Embase, Jan 2008–Oct 2024). Pooled IVIG resistance prevalence across cohorts confirms the 10–20% range in general KD population, rising to ~25% in infants under 12 months. All existing scoring models (Kobayashi, Egami, Sano) show high risk of bias in non-Japanese populations — supporting need for population-specific tools.</p>
+      <div class="citation">Front Pediatr. 2025 · PROBAST risk-of-bias: Pediatr Res. 2023;94(3):1125</div>
+    </div>
+
+    <div class="ev-card">
+      <span class="ev-tag guideline">MIS-C Update</span>
+      <h3>KD vs. MIS-C — Distinguishing Features</h3>
+      <p>MIS-C (Multisystem Inflammatory Syndrome in Children post-COVID-19) shares features with KD but is typically seen in older children (&gt;5 years), has prominent GI involvement, shock, and lymphopenia. Coronary aneurysms occur in ~15–20% of MIS-C. Cytokine profiles overlap — both IL-1β and IL-6 elevated, but MIS-C shows higher IL-6 relative to IL-1. Anakinra increasingly used in MIS-C. SARS-CoV-2 serology essential in all suspected KD in current era.</p>
+      <div class="citation">AHA 2024 KD Statement · Pediatric Rheumatology Societies, 2023</div>
+    </div>
+  </div>
+
+  <div class="info-block" style="margin-top:1.5rem;">
+    <h3>Resource-Limited Settings — Key Adaptations</h3>
+    <ul>
+      <li>IVIG may be unavailable or cost-prohibitive — corticosteroids as primary treatment have evidence (RAISE framework)</li>
+      <li>Echocardiography access may be limited — clinical diagnosis and risk scoring become critical</li>
+      <li>CBC-based indices (NLR, MLR) are low-cost alternatives to complex scoring when echo/lab panels unavailable</li>
+      <li>Aspirin is widely available — antiplatelet phase continuation should not be compromised</li>
+      <li>Long-term follow-up infrastructure is critical — missed giant aneurysms lead to MI in young adults</li>
+      <li>Consider MIS-C in febrile children with recent SARS-CoV-2 exposure — management differs slightly</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function togglePhase(card) {
+  card.classList.toggle('open');
+}
+</script>
+</body>
+</html>

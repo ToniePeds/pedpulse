@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Type 1 Diabetes — The Hidden Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2330;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --red: #f85149;
+    --red-soft: rgba(248,81,73,0.15);
+    --blue: #58a6ff;
+    --blue-soft: rgba(88,166,255,0.12);
+    --green: #3fb950;
+    --green-soft: rgba(63,185,80,0.12);
+    --orange: #d29922;
+    --orange-soft: rgba(210,153,34,0.12);
+    --purple: #bc8cff;
+    --purple-soft: rgba(188,140,255,0.12);
+    --gold: #e3b341;
+    --accent: #f0883e;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(248,81,73,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(88,166,255,0.07) 0%, transparent 60%),
+                var(--bg);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--red-soft);
+    border: 1px solid rgba(248,81,73,0.3);
+    color: var(--red);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .hero h1 span { color: var(--red); font-style: italic; }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 3rem;
+    animation: fadeDown 0.6s 0.2s ease both;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeDown 0.6s 0.3s ease both;
+  }
+
+  .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--red);
+    color: white;
+  }
+  .btn-primary:hover { background: #ff6b63; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(248,81,73,0.3); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--blue); color: var(--blue); transform: translateY(-2px); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .scroll-arrow { font-size: 1.2rem; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 56px;
+    overflow-x: auto;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-link {
+    padding: 0 1rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-link:hover, .nav-link.active { color: var(--text); border-color: var(--red); }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 0.75rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .section-intro {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 640px;
+    margin-bottom: 3rem;
+  }
+
+  /* ── ANALOGY CARD ── */
+  .analogy-card {
+    background: linear-gradient(135deg, var(--blue-soft), transparent);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .analogy-card::before {
+    content: '"';
+    position: absolute;
+    top: -1rem;
+    left: 1.5rem;
+    font-size: 8rem;
+    color: rgba(88,166,255,0.08);
+    font-family: serif;
+    line-height: 1;
+  }
+  .analogy-card .label { color: var(--blue); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .analogy-card p { color: var(--text); font-size: 1rem; line-height: 1.8; position: relative; }
+
+  /* ── INTERACTIVE DIAGRAM ── */
+  .diagram-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .diagram-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .ctrl-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+  .ctrl-btn:hover { border-color: var(--red); color: var(--text); }
+  .ctrl-btn.active { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+
+  #mainSVG {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .tooltip {
+    position: absolute;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    max-width: 260px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 50;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--red);
+    margin-bottom: 0.25rem;
+  }
+  .tooltip-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; }
+  .tooltip-body { color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+
+  /* ── STEPS ── */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .step-item {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step-num {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.3s;
+    background: var(--surface);
+    flex-shrink: 0;
+    z-index: 1;
+  }
+
+  .step-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    min-height: 40px;
+    transition: background 0.3s;
+  }
+
+  .step-item:last-child .step-line { display: none; }
+
+  .step-content {
+    padding: 0 0 2.5rem 1.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .step-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+    display: inline-block;
+  }
+
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    transition: color 0.3s;
+  }
+
+  .step-body {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+
+  .step-item.open .step-body { max-height: 400px; }
+  .step-item.open .step-num { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+  .step-item.open .step-title { color: var(--red); }
+  .step-item.open .step-line { background: var(--red-soft); }
+
+  .step-detail {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-top: 0.75rem;
+    border-left: 3px solid;
+  }
+  .step-detail p { font-size: 0.85rem; color: var(--text); margin-bottom: 0.25rem; }
+  .step-detail .analogy { color: var(--gold); font-style: italic; font-size: 0.83rem; }
+
+  /* ── HONEYMOON SECTION ── */
+  .honeymoon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  .hm-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: all 0.25s;
+    cursor: default;
+  }
+  .hm-card:hover { border-color: rgba(248,81,73,0.4); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .hm-card .icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+  .hm-card h4 { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .hm-card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+  /* ── PHASE VISUALIZATION ── */
+  .phase-bar {
+    display: flex;
+    height: 64px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 2rem 0 1rem;
+    border: 1px solid var(--border);
+  }
+  .phase-seg {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0.5rem;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+  }
+  .phase-seg:last-child { border-right: none; }
+  .phase-seg:hover { filter: brightness(1.3); }
+  .phase-seg.p1 { background: linear-gradient(135deg, #1a3a2a, #0d2018); color: var(--green); }
+  .phase-seg.p2 { background: linear-gradient(135deg, #1a2a3a, #0d1828); color: var(--blue); flex: 1.5; }
+  .phase-seg.p3 { background: linear-gradient(135deg, #3a3a1a, #281f0d); color: var(--gold); flex: 0.7; }
+  .phase-seg.p4 { background: linear-gradient(135deg, #3a1a1a, #280d0d); color: var(--red); flex: 1.5; }
+  .phase-seg.p5 { background: linear-gradient(135deg, #2a1a3a, #1a0d28); color: var(--purple); }
+
+  .phase-labels {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .phase-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .phase-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* ── QUIZ ── */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.3s;
+  }
+  .quiz-card.correct { border-color: var(--green); background: linear-gradient(135deg, var(--green-soft), var(--surface)); }
+  .quiz-card.wrong { border-color: var(--red); background: linear-gradient(135deg, var(--red-soft), var(--surface)); }
+
+  .quiz-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .quiz-q {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+  .quiz-options {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .quiz-opt {
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.88rem;
+    color: var(--text);
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+  .quiz-opt.selected-correct { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+  .quiz-opt.selected-wrong { border-color: var(--red); background: var(--red-soft); color: var(--red); }
+  .quiz-opt.reveal-correct { border-color: var(--green); color: var(--green); }
+  .quiz-opt:disabled { cursor: default; }
+
+  .quiz-feedback {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    display: none;
+    line-height: 1.5;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: var(--green-soft); border: 1px solid rgba(63,185,80,0.3); color: var(--green); }
+  .quiz-feedback.fail { background: var(--red-soft); border: 1px solid rgba(248,81,73,0.3); color: #ff9999; }
+
+  /* ── SCORE ── */
+  .score-board {
+    text-align: center;
+    padding: 3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    display: none;
+  }
+  .score-board.show { display: block; }
+  .score-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .score-msg { color: var(--muted); font-size: 1rem; margin-bottom: 2rem; }
+
+  /* ── WALKTHROUGH ── */
+  .walkthrough-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .walkthrough-overlay.open { opacity: 1; pointer-events: all; }
+  .wt-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 580px;
+    width: 100%;
+    padding: 2.5rem;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s;
+  }
+  .walkthrough-overlay.open .wt-panel { transform: scale(1); }
+  .wt-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .wt-close:hover { color: var(--text); border-color: var(--red); }
+  .wt-step-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .wt-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+  .wt-body { color: var(--muted); font-size: 0.95rem; line-height: 1.8; margin-bottom: 1.5rem; }
+  .wt-analogy {
+    background: var(--blue-soft);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.88rem;
+    color: var(--blue);
+    margin-bottom: 1.75rem;
+    line-height: 1.6;
+  }
+  .wt-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .wt-progress {
+    display: flex;
+    gap: 6px;
+  }
+  .wt-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+  .wt-dot.active { background: var(--red); width: 20px; border-radius: 3px; }
+
+  /* ── MISC ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  .highlight-box {
+    background: var(--orange-soft);
+    border: 1px solid rgba(210,153,34,0.2);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+    color: var(--gold);
+    line-height: 1.7;
+  }
+  .highlight-box strong { color: var(--accent); }
+
+  .misconception {
+    background: var(--red-soft);
+    border: 1px solid rgba(248,81,73,0.2);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .misconception .mc-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 0.4rem;
+  }
+  .misconception p { font-size: 0.9rem; color: #ffaaaa; line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-6px); }
+  }
+  @keyframes drawLine {
+    from { stroke-dashoffset: 1000; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .animate-line {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  .animate-line.drawn {
+    animation: drawLine 2.5s ease forwards;
+  }
+  .animate-line-blue.drawn {
+    animation: drawLine 2.5s 0.3s ease forwards;
+  }
+
+  .svg-label-group { opacity: 0; transition: opacity 0.5s; }
+  .svg-label-group.visible { opacity: 1; }
+
+  .dot-marker {
+    cursor: pointer;
+    transition: r 0.2s;
+  }
+  .dot-marker:hover { r: 10; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .step-item { grid-template-columns: 56px 1fr; }
+    .phase-seg { font-size: 0.65rem; padding: 0.3rem; }
+    .wt-panel { padding: 1.75rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- WALKTHROUGH OVERLAY -->
+<div class="walkthrough-overlay" id="wtOverlay">
+  <div class="wt-panel">
+    <button class="wt-close" onclick="closeWalkthrough()">✕</button>
+    <div class="wt-step-count" id="wtStepCount">Step 1 of 8</div>
+    <div class="wt-title" id="wtTitle"></div>
+    <div class="wt-body" id="wtBody"></div>
+    <div class="wt-analogy" id="wtAnalogy"></div>
+    <div class="wt-nav">
+      <button class="btn btn-ghost" onclick="prevWT()" id="btnPrev" style="padding:0.5rem 1.2rem;font-size:0.85rem">← Prev</button>
+      <div class="wt-progress" id="wtDots"></div>
+      <button class="btn btn-primary" onclick="nextWT()" id="btnNext" style="padding:0.5rem 1.2rem;font-size:0.85rem">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-num" id="tt-num"></div>
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-body" id="tt-body"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero" id="top">
+  <div class="hero-badge">🔬 Interactive Medical Learning</div>
+  <h1>The Hidden Journey of<br/><span>Type 1 Diabetes</span></h1>
+  <p class="hero-sub">Your immune system is quietly waging war on your own pancreas — years before you feel a thing. Let's explore <em>how</em> and <em>why</em>.</p>
+  <div class="hero-cta">
+    <button class="btn btn-primary" onclick="startWalkthrough()">🎓 Guided Tour</button>
+    <a href="#diagram" class="btn btn-ghost">Explore Diagram ↓</a>
+  </div>
+  <div class="scroll-hint">
+    <span>scroll to explore</span>
+    <span class="scroll-arrow">↓</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-link" href="#overview">Overview</a>
+    <a class="nav-link" href="#diagram">Diagram</a>
+    <a class="nav-link" href="#steps">Step-by-Step</a>
+    <a class="nav-link" href="#honeymoon">Honeymoon Phase</a>
+    <a class="nav-link" href="#quiz">Test Yourself</a>
+  </div>
+</nav>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="section-label">Concept Overview</div>
+  <h2>What's actually happening?</h2>
+  <p class="section-intro">Type 1 Diabetes doesn't appear suddenly. It's a slow, hidden process that unfolds over years — like a slow leak in a dam before it finally breaks.</p>
+
+  <div class="analogy-card">
+    <div class="label">🏭 The Factory Analogy</div>
+    <p>Imagine your pancreas has a <strong>factory</strong> full of workers (β-cells) whose only job is to make insulin. Now imagine a group of security guards (your immune system) has been given <em>wrong instructions</em> — they think the workers are enemies and start quietly eliminating them, one by one.<br/><br/>
+    For years, the remaining workers work <strong>overtime</strong> to cover for their missing colleagues. Blood sugar stays normal. You feel fine. But eventually there aren't enough workers left, the factory can't keep up — and that's when the alarm bells ring and diabetes is diagnosed.</p>
+  </div>
+
+  <div class="misconception">
+    <div class="mc-label">⚠️ Common Misconception</div>
+    <p>Many people think T1DM starts at diagnosis. <strong>Wrong.</strong> By the time symptoms appear, up to <strong>80–90% of β-cells are already gone.</strong> The "start" was months or years earlier.</p>
+  </div>
+
+  <div class="highlight-box">
+    <strong>Key insight:</strong> The diagram shows two curves over time — a <span style="color:var(--red)">red curve for β-cell mass</span> (the factory capacity) and a <span style="color:var(--blue)">blue curve for blood glucose/insulin function</span>. Understanding why these curves move the way they do is the whole story of T1DM.
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- DIAGRAM -->
+<section id="diagram">
+  <div class="section-label">Interactive Diagram</div>
+  <h2>The Map of T1DM Over Time</h2>
+  <p class="section-intro">Hover over any numbered marker to learn about that stage. Use the controls to reveal different layers of the diagram.</p>
+
+  <div class="diagram-wrapper">
+    <div class="diagram-controls">
+      <button class="ctrl-btn active" onclick="toggleLayer('all', this)">Show All</button>
+      <button class="ctrl-btn" onclick="toggleLayer('immune', this)">🛡️ Immune Attack</button>
+      <button class="ctrl-btn" onclick="toggleLayer('glucose', this)">🩸 Glucose Track</button>
+      <button class="ctrl-btn" onclick="toggleLayer('cpeptide', this)">🔬 C-Peptide</button>
+      <button class="ctrl-btn" onclick="animateCurves()">▶ Animate</button>
+    </div>
+
+    <svg id="mainSVG" viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background grid -->
+      <defs>
+        <pattern id="grid" width="60" height="44" patternUnits="userSpaceOnUse">
+          <path d="M 60 0 L 0 0 0 44" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        </pattern>
+        <linearGradient id="redGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f85149" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#f85149" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#58a6ff" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#58a6ff" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <rect width="900" height="440" fill="url(#grid)" rx="12"/>
+
+      <!-- Axes -->
+      <line x1="80" y1="30" x2="80" y2="380" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+      <line x1="80" y1="380" x2="880" y2="380" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+      <text x="20" y="200" fill="#8b949e" font-size="11" font-family="DM Sans" text-anchor="middle" transform="rotate(-90,20,200)">β-cell mass / Function</text>
+      <text x="480" y="420" fill="#8b949e" font-size="11" font-family="DM Sans" text-anchor="middle">Age (years)</text>
+
+      <!-- Phase background zones -->
+      <!-- Pre-clinical zone -->
+      <rect x="80" y="30" width="420" height="350" fill="rgba(63,185,80,0.03)" rx="0"/>
+      <!-- Diagnosis zone highlight -->
+      <rect x="500" y="30" width="80" height="350" fill="rgba(248,81,73,0.06)" rx="0"/>
+
+      <!-- Phase labels at top -->
+      <text x="290" y="52" fill="rgba(63,185,80,0.5)" font-size="9.5" font-family="DM Sans" font-weight="600" letter-spacing="1" text-anchor="middle">PRE-CLINICAL PHASE</text>
+      <text x="540" y="52" fill="rgba(248,81,73,0.5)" font-size="9.5" font-family="DM Sans" font-weight="600" letter-spacing="1" text-anchor="middle">ONSET</text>
+      <text x="720" y="52" fill="rgba(88,166,255,0.5)" font-size="9.5" font-family="DM Sans" font-weight="600" letter-spacing="1" text-anchor="middle">POST-DIAGNOSIS</text>
+
+      <!-- Vertical stage lines -->
+      <line x1="200" y1="60" x2="200" y2="380" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="5,4" class="immune-layer"/>
+      <line x1="370" y1="60" x2="370" y2="380" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="5,4" class="immune-layer"/>
+      <line x1="500" y1="60" x2="500" y2="380" stroke="rgba(248,81,73,0.25)" stroke-width="1.5" stroke-dasharray="6,3"/>
+      <line x1="580" y1="60" x2="580" y2="380" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="5,4"/>
+      <line x1="700" y1="60" x2="700" y2="380" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="5,4" class="cpeptide-layer"/>
+
+      <!-- Stage line labels -->
+      <text x="200" y="392" fill="#8b949e" font-size="8.5" font-family="DM Mono" text-anchor="middle" class="immune-layer">Immune trigger</text>
+      <text x="370" y="392" fill="#8b949e" font-size="8.5" font-family="DM Mono" text-anchor="middle" class="immune-layer">Overt autoimmunity</text>
+      <text x="500" y="392" fill="#f85149" font-size="8.5" font-family="DM Mono" text-anchor="middle">Diagnosis</text>
+      <text x="580" y="392" fill="#8b949e" font-size="8.5" font-family="DM Mono" text-anchor="middle">Honeymoon</text>
+      <text x="700" y="392" fill="#8b949e" font-size="8.5" font-family="DM Mono" text-anchor="middle" class="cpeptide-layer">C-peptide loss</text>
+
+      <!-- β-cell mass area fill -->
+      <path id="redAreaPath" d="
+        M 80,130 C 130,128 170,127 200,126
+        C 230,126 250,125 280,128
+        C 310,131 330,134 355,140
+        C 375,145 385,155 400,168
+        C 415,181 425,192 440,205
+        C 455,218 462,228 475,240
+        C 488,252 492,258 500,263
+        C 510,268 520,272 535,278
+        C 550,284 560,290 575,298
+        C 590,306 600,313 620,322
+        C 640,331 660,338 685,344
+        C 710,350 740,355 780,358
+        C 820,361 860,362 880,362
+        L 880,380 L 80,380 Z
+      " fill="url(#redGrad)" opacity="0.6"/>
+
+      <!-- Blue area (glucose function curve - inverted/offset) -->
+      <path id="blueAreaPath" d="
+        M 80,250 C 120,248 160,247 200,248
+        C 240,249 270,251 300,252
+        C 330,253 350,254 370,252
+        C 390,250 400,244 415,238
+        C 430,232 438,226 450,224
+        C 462,222 470,222 480,225
+        C 490,228 495,232 505,245
+        C 515,258 520,268 535,275
+        C 550,282 560,285 580,282
+        C 600,279 615,272 635,265
+        C 655,258 670,253 695,255
+        C 720,257 755,262 790,265
+        C 825,268 860,270 880,271
+        L 880,380 L 80,380 Z
+      " fill="url(#blueGrad)" opacity="0.5" class="glucose-layer"/>
+
+      <!-- RED CURVE — β-cell mass (main) -->
+      <path id="redCurve" class="animate-line" d="
+        M 80,130 C 130,128 170,127 200,126
+        C 230,126 250,125 280,128
+        C 310,131 330,134 355,140
+        C 375,145 385,155 400,168
+        C 415,181 425,192 440,205
+        C 455,218 462,228 475,240
+        C 488,252 492,258 500,263
+        C 510,268 520,272 535,278
+        C 550,284 560,290 575,298
+        C 590,306 600,313 620,322
+        C 640,331 660,338 685,344
+        C 710,350 740,355 780,358
+        C 820,361 860,362 880,362
+      " fill="none" stroke="#f85149" stroke-width="3" stroke-linecap="round" filter="url(#glow)"/>
+
+      <!-- Relapsing-remitting bumps on red curve (note 4) -->
+      <path id="redBumps" class="animate-line" d="
+        M 310,131 C 320,126 330,123 340,124 C 350,125 358,130 368,134
+        C 378,138 385,150 395,162
+      " fill="none" stroke="#f85149" stroke-width="2" stroke-dasharray="4,3" opacity="0.5"/>
+
+      <!-- BLUE CURVE — glucose/insulin function -->
+      <path id="blueCurve" class="animate-line animate-line-blue" d="
+        M 80,250 C 120,248 160,247 200,248
+        C 240,249 270,251 300,252
+        C 330,253 350,254 370,252
+        C 390,250 400,244 415,238
+        C 430,232 438,226 450,224
+        C 462,222 470,222 480,225
+        C 490,228 495,232 505,245
+        C 515,258 520,268 535,275
+        C 550,282 560,285 580,282
+        C 600,279 615,272 635,265
+        C 655,258 670,253 695,255
+        C 720,257 755,262 790,265
+        C 825,268 860,270 880,271
+      " fill="none" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round" class="glucose-layer" filter="url(#glow)"/>
+
+      <!-- C-peptide label zone -->
+      <rect x="502" y="245" width="195" height="18" fill="rgba(88,166,255,0.12)" rx="4" class="cpeptide-layer"/>
+      <text x="600" y="257" fill="#58a6ff" font-size="8.5" font-family="DM Mono" text-anchor="middle" class="cpeptide-layer">C-peptide detectable →</text>
+      <rect x="700" y="245" width="178" height="18" fill="rgba(248,81,73,0.1)" rx="4" class="cpeptide-layer"/>
+      <text x="789" y="257" fill="#f85149" font-size="8.5" font-family="DM Mono" text-anchor="middle" class="cpeptide-layer">← No C-peptide</text>
+
+      <!-- Honeymoon dip on blue -->
+      <path d="M 500,263 C 510,255 520,244 535,240 C 548,236 558,240 570,248 C 582,256 590,268 605,278"
+            fill="none" stroke="#f0883e" stroke-width="2.5" stroke-linecap="round" opacity="0.8" class="glucose-layer"/>
+      <text x="535" y="230" fill="#f0883e" font-size="9" font-family="DM Sans" font-weight="600" text-anchor="middle" class="glucose-layer">Honeymoon</text>
+
+      <!-- NUMBERED MARKERS — interactive dots -->
+      <!-- 1: Prenatal events -->
+      <circle class="dot-marker" cx="90" cy="118" r="7" fill="#f85149" opacity="0.9"
+        onmouseenter="showTT(event,1)" onmouseleave="hideTT()" onclick="openStep(0)"/>
+      <text x="90" y="122" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">1</text>
+
+      <!-- 2: Genetic predisposition -->
+      <circle class="dot-marker" cx="160" cy="108" r="7" fill="#bc8cff" opacity="0.9"
+        onmouseenter="showTT(event,2)" onmouseleave="hideTT()" onclick="openStep(1)"/>
+      <text x="160" y="112" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">2</text>
+
+      <!-- 3: Environment -->
+      <circle class="dot-marker" cx="285" cy="118" r="7" fill="#3fb950" opacity="0.9"
+        onmouseenter="showTT(event,3)" onmouseleave="hideTT()" onclick="openStep(2)"/>
+      <text x="285" y="122" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">3</text>
+
+      <!-- 4: Relapsing -->
+      <circle class="dot-marker" cx="340" cy="122" r="7" fill="#d29922" opacity="0.9"
+        onmouseenter="showTT(event,4)" onmouseleave="hideTT()" onclick="openStep(3)"/>
+      <text x="340" y="126" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">4</text>
+
+      <!-- 5: Autoantibodies -->
+      <circle class="dot-marker" cx="420" cy="172" r="7" fill="#58a6ff" opacity="0.9"
+        onmouseenter="showTT(event,5)" onmouseleave="hideTT()" onclick="openStep(4)"/>
+      <text x="420" y="176" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">5</text>
+
+      <!-- 6: Symptomatic onset -->
+      <circle class="dot-marker" cx="500" cy="260" r="8" fill="#f85149" opacity="1"
+        onmouseenter="showTT(event,6)" onmouseleave="hideTT()" onclick="openStep(5)"/>
+      <text x="500" y="264" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">6</text>
+
+      <!-- 7: C-peptide present -->
+      <circle class="dot-marker" cx="630" cy="270" r="7" fill="#f0883e" opacity="0.9"
+        onmouseenter="showTT(event,7)" onmouseleave="hideTT()" onclick="openStep(6)"/>
+      <text x="630" y="274" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">7</text>
+
+      <!-- 8: Beta cell mass not zero -->
+      <circle class="dot-marker" cx="820" cy="355" r="7" fill="#bc8cff" opacity="0.9"
+        onmouseenter="showTT(event,8)" onmouseleave="hideTT()" onclick="openStep(7)"/>
+      <text x="820" y="359" fill="white" font-size="8" font-family="DM Mono" text-anchor="middle" pointer-events="none" font-weight="700">8</text>
+
+      <!-- Legends -->
+      <rect x="82" y="310" width="130" height="50" fill="rgba(13,17,23,0.7)" rx="8"/>
+      <line x1="94" y1="327" x2="114" y2="327" stroke="#f85149" stroke-width="3" stroke-linecap="round"/>
+      <text x="120" y="331" fill="#e6edf3" font-size="9.5" font-family="DM Sans">β-cell mass</text>
+      <line x1="94" y1="347" x2="114" y2="347" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round" class="glucose-layer"/>
+      <text x="120" y="351" fill="#e6edf3" font-size="9.5" font-family="DM Sans" class="glucose-layer">Glucose control</text>
+
+      <!-- Diagnosis arrow -->
+      <polygon points="500,75 494,65 506,65" fill="#f85149" opacity="0.8"/>
+      <text x="500" y="85" fill="#f85149" font-size="9" font-family="DM Mono" text-anchor="middle" font-weight="600">DIAGNOSIS</text>
+    </svg>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- STEPS -->
+<section id="steps">
+  <div class="section-label">Step-by-Step Explanation</div>
+  <h2>Breaking it down, one stage at a time</h2>
+  <p class="section-intro">Click any stage to expand the explanation. Each stage builds on the last.</p>
+
+  <div class="steps-grid" id="stepsGrid">
+    <!-- Populated by JS -->
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- HONEYMOON PHASE -->
+<section id="honeymoon">
+  <div class="section-label">Special Focus</div>
+  <h2>The Honeymoon Phase — Why Does It Happen?</h2>
+  <p class="section-intro">One of the most misunderstood phenomena in T1DM. Let's unpack it step by step.</p>
+
+  <div class="analogy-card">
+    <div class="label">🕯️ The Candle Analogy</div>
+    <p>Imagine the remaining β-cells are candles that have been sitting in a <em>smoky, drafty room</em> (the diabetic environment of high glucose and inflammation). They're flickering — not giving full light. When you finally shut the window (start insulin), reduce the smoke (fix blood sugar), and shield them — the candles suddenly <strong>burn brighter</strong> again. Not because new candles appeared, but because the old ones could finally breathe.</p>
+  </div>
+
+  <!-- Phase bar -->
+  <div style="margin-top:2rem">
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.75rem;font-weight:500">CLICK A PHASE TO LEARN MORE</div>
+    <div class="phase-bar" id="phaseBar">
+      <div class="phase-seg p1" onclick="showPhase(0)">Diagnosis<br/>Crisis</div>
+      <div class="phase-seg p2" onclick="showPhase(1)">Insulin<br/>Started</div>
+      <div class="phase-seg p3" onclick="showPhase(2)">Honeymoon<br/>🍯</div>
+      <div class="phase-seg p4" onclick="showPhase(3)">Immune<br/>Resumes</div>
+      <div class="phase-seg p5" onclick="showPhase(4)">Full<br/>Dependence</div>
+    </div>
+    <div id="phaseDetail" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;display:none;font-size:0.9rem;line-height:1.7;color:var(--muted)">
+    </div>
+  </div>
+
+  <div class="honeymoon-grid">
+    <div class="hm-card">
+      <div class="icon">🔥</div>
+      <h4>Before Insulin (at diagnosis)</h4>
+      <p>80–90% of β-cells are gone. Surviving cells are <em>stressed</em> by high glucose, inflammation, and lipotoxicity — they're barely functioning even though they're still alive.</p>
+    </div>
+    <div class="hm-card">
+      <div class="icon">💉</div>
+      <h4>Insulin therapy "rescues" survivors</h4>
+      <p>Exogenous insulin normalizes blood glucose → glucotoxicity is relieved → surviving β-cells recover function. This is called <strong>β-cell rest</strong>. Endogenous insulin production rises.</p>
+    </div>
+    <div class="hm-card">
+      <div class="icon">📉</div>
+      <h4>Insulin requirements drop</h4>
+      <p>The patient now has exogenous + endogenous insulin. HbA1c improves dramatically. Doses fall, sometimes to near zero. C-peptide becomes detectable again.</p>
+    </div>
+    <div class="hm-card">
+      <div class="icon">⚔️</div>
+      <h4>But the war continues</h4>
+      <p>Autoantibodies remain elevated. CD8⁺ T-cells keep attacking β-cells silently. The honeymoon is comfort, not cure — the immune assault never paused.</p>
+    </div>
+    <div class="hm-card">
+      <div class="icon">⏱️</div>
+      <h4>Ends within months–2 years</h4>
+      <p>As the final β-cells are destroyed, endogenous production disappears. Insulin doses rise again, C-peptide vanishes, and glycemic stability decreases.</p>
+    </div>
+    <div class="hm-card">
+      <div class="icon">🧪</div>
+      <h4>Why it matters clinically</h4>
+      <p>Don't stop insulin during honeymoon — β-cell rest requires it. Never misdiagnose as T2DM. C-peptide monitoring tracks when it ends. Immunotherapy targets this window.</p>
+    </div>
+  </div>
+
+  <div class="misconception" style="margin-top:2rem">
+    <div class="mc-label">⚠️ Critical Misconception</div>
+    <p>"The honeymoon means my child doesn't really have T1DM" — FALSE. The autoimmune process is still active. Stopping insulin completely risks DKA. This phase is temporary and its end is inevitable without immune intervention.</p>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <div class="section-label">Test Yourself</div>
+  <h2>How well do you understand this now?</h2>
+  <p class="section-intro">6 questions, building from beginner to advanced. No pressure — each answer comes with a detailed explanation.</p>
+
+  <div id="quizContainer"></div>
+  <div class="score-board" id="scoreBoard">
+    <div class="score-big" id="scoreBig"></div>
+    <div class="score-msg" id="scoreMsg"></div>
+    <button class="btn btn-ghost" onclick="resetQuiz()">Try Again</button>
+  </div>
+</section>
+
+<footer>
+  <p>Interactive learning tool · Based on the Eisenbarth model of T1DM natural history · Built with the Feynman teaching method</p>
+  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">For educational purposes only — not clinical advice</p>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+
+const tooltipData = {
+  1: { title: "Precipitating events in utero", body: "The very first trigger may happen before birth — possibly a viral infection during fetal development that sets the immune system on the wrong path." },
+  2: { title: "Genetic predisposition", body: "HLA-DR3 and DR4 gene variants are the biggest risk factor. Your DNA doesn't cause T1DM — it loads the gun. The environment pulls the trigger." },
+  3: { title: "Environment shapes destiny", body: "Gut microbiome, viral infections (Coxsackievirus B), vitamin D, diet — all can accelerate or slow the destruction of β-cells after the immune trigger fires." },
+  4: { title: "Relapsing-remitting β-cell loss", body: "The decline isn't always a straight line. Periods of faster destruction alternate with slower ones — making the timeline unpredictable before diagnosis." },
+  5: { title: "Silent autoantibodies", body: "≥2 positive islet autoantibodies (anti-GAD65, anti-IA2, anti-ZnT8) = Stage 1 T1DM. No symptoms yet. This is the best window for immunotherapy intervention." },
+  6: { title: "Overt diabetes — Diagnosis day", body: "Only ~10–20% of β-cells remain. Blood glucose tips into the diabetic range. Classic symptoms appear: polyuria, polydipsia, weight loss, fatigue." },
+  7: { title: "Residual C-peptide post-diagnosis", body: "Some patients still make small amounts of insulin (detectable as C-peptide). This is the honeymoon phase — treasured because it means better glucose control." },
+  8: { title: "β-cell mass is never truly zero", body: "Even in decades-long T1DM, tiny clusters of β-cells may survive. This matters for islet regeneration research and closed-loop insulin therapy." }
+};
+
+const stepsData = [
+  {
+    num: "01",
+    tag: "Pre-natal", tagColor: "#3fb950", tagBg: "rgba(63,185,80,0.12)",
+    title: "It may start before you're even born",
+    body: "Precipitating events — possibly viral infections like enteroviruses entering the mother during pregnancy — may trigger abnormal immune programming in the developing fetus. The immune system is learning who is 'self' and who is 'enemy,' and something goes wrong.",
+    detail: "These events don't cause T1DM immediately. They prime the immune system for a future attack. Think of it as a bad update to the body's security software.",
+    analogy: "🤱 Like a computer factory installing slightly faulty firmware that won't cause problems until later stress-tested.",
+    color: "#3fb950"
+  },
+  {
+    num: "02",
+    tag: "Genetics", tagColor: "#bc8cff", tagBg: "rgba(188,140,255,0.12)",
+    title: "Your genes load the gun",
+    body: "Specific HLA gene variants (HLA-DR3/DR4, HLA-DQ) on chromosome 6 are found in 90% of T1DM patients. These genes control how the immune system distinguishes 'self' from 'enemy'. Faulty variants cause autoreactive T-cells to escape deletion in the thymus.",
+    detail: "Having these genes doesn't mean you'll get T1DM. Risk is ~5% if a sibling has it, ~3% if a parent has it. But without these genes, T1DM is extremely rare.",
+    analogy: "🔫 Genes load the gun. Environment pulls the trigger. Neither alone is usually enough.",
+    color: "#bc8cff"
+  },
+  {
+    num: "03",
+    tag: "Environment", tagColor: "#3fb950", tagBg: "rgba(63,185,80,0.12)",
+    title: "The environment shapes the whole story",
+    body: "Viral infections (especially Coxsackievirus B, rotavirus), gut microbiome disruptions, low vitamin D, early cow's milk exposure, and geographic location all influence whether β-cell destruction is triggered and how fast it progresses.",
+    detail: "T1DM incidence is 3× higher in Finland than in Venezuela. Identical twins only have ~50% concordance — proving genes alone aren't the answer. Something in the environment matters enormously.",
+    analogy: "🌱 Same seed (genes), different soil (environment) → very different outcomes.",
+    color: "#3fb950"
+  },
+  {
+    num: "04",
+    tag: "Progression", tagColor: "#d29922", tagBg: "rgba(210,153,34,0.12)",
+    title: "The decline isn't always a straight line",
+    body: "β-cell destruction is broadly progressive, but it can have bursts and plateaus — a relapsing-remitting pattern. This explains why some people have a long pre-clinical phase of 10+ years while others progress rapidly within months.",
+    detail: "This non-linearity also explains the variable 'honeymoon' duration after diagnosis. It's the same pattern continuing — some weeks the immune attack is fierce, other weeks it slows.",
+    analogy: "🌊 Like erosion on a cliff — mostly gradual, but sometimes big chunks fall away suddenly.",
+    color: "#d29922"
+  },
+  {
+    num: "05",
+    tag: "Pre-symptomatic", tagColor: "#58a6ff", tagBg: "rgba(88,166,255,0.12)",
+    title: "Silent markers warn of the storm ahead",
+    body: "Islet autoantibodies appear years before symptoms. Testing positive for ≥2 of: anti-GAD65, anti-IA2, anti-ZnT8, anti-insulin (in children). This is now classified as Stage 1 (normal glucose) and Stage 2 (dysglycemia) T1DM — disease exists before symptoms.",
+    detail: "FDA-approved teplizumab (anti-CD3) can delay Stage 3 onset by >2 years when given at Stage 2. Screening first-degree relatives can catch this window.",
+    analogy: "🔍 Like seeing storm clouds and dropping barometric pressure before the actual rain. You can prepare — or even intervene.",
+    color: "#58a6ff"
+  },
+  {
+    num: "06",
+    tag: "Diagnosis", tagColor: "#f85149", tagBg: "rgba(248,81,73,0.12)",
+    title: "The alarm finally sounds — but the damage is mostly done",
+    body: "When ~80–90% of β-cells are destroyed, the remaining cells can no longer maintain glucose homeostasis. Blood glucose rises above the renal threshold → glucose spills into urine → osmotic diuresis → the classic triad: polydipsia, polyuria, polyphagia + weight loss.",
+    detail: "DKA can be the presenting feature — fatty acids are mobilized as alternative fuel, producing ketone bodies. Without insulin, the catabolic state is life-threatening.",
+    analogy: "💧 Like a dam with so many holes that water (glucose) finally starts flooding — the breach was building for years.",
+    color: "#f85149"
+  },
+  {
+    num: "07",
+    tag: "Post-diagnosis", tagColor: "#f0883e", tagBg: "rgba(240,136,62,0.12)",
+    title: "The honeymoon — a brief, precious reprieve",
+    body: "After insulin therapy begins, metabolic stress is removed from surviving β-cells (β-cell rest). They recover function. Endogenous insulin rises. Requirements drop, sometimes dramatically. C-peptide remains detectable. This honeymoon lasts months to 2 years.",
+    detail: "Critical: Never stop insulin during honeymoon. The immune attack continues silently. C-peptide monitoring tells you when it ends. Immunotherapy (teplizumab) may extend this period.",
+    analogy: "🕯️ The remaining candles burn brighter when the smoke is cleared — but the room is still getting smaller.",
+    color: "#f0883e"
+  },
+  {
+    num: "08",
+    tag: "Long-term", tagColor: "#bc8cff", tagBg: "rgba(188,140,255,0.12)",
+    title: "The story doesn't end at zero β-cells",
+    body: "Even in decades-long T1DM, autopsy studies show tiny islands of surviving β-cells in some patients. Some patients also produce detectable low C-peptide even 50+ years after diagnosis. β-cell mass is almost never truly zero.",
+    detail: "This has huge implications: β-cell regeneration therapies (stem cell-derived islets, encapsulated transplants) can work if the autoimmune attack is controlled. Even a small residual mass is a target.",
+    analogy: "🌱 Like embers under ash — not dead, just waiting. The challenge is creating conditions for them to spark again.",
+    color: "#bc8cff"
+  }
+];
+
+const phaseDetails = [
+  { title: "Diagnosis Crisis", color: "#3fb950", content: "At diagnosis, the patient arrives with hyperglycemia, perhaps DKA. β-cell mass is ~10–20% of normal. Surviving β-cells are present but severely dysfunctional due to glucotoxicity (high glucose inhibits insulin secretion), lipotoxicity (fatty acids), and cytokine inflammation from ongoing insulitis. Insulin requirements are HIGH." },
+  { title: "Insulin Therapy Begins", color: "#58a6ff", content: "Exogenous insulin is started. Blood glucose normalizes. Glucotoxicity is relieved. The toxic inflammatory milieu around surviving β-cells improves. The cells begin to recover their secretory function — this is 'β-cell rest.' Endogenous C-peptide begins to rise." },
+  { title: "The Honeymoon 🍯", color: "#f0883e", content: "The patient has endogenous + exogenous insulin. Insulin requirements drop dramatically (sometimes to <0.5 U/kg/day). HbA1c improves effortlessly. C-peptide is detectable. Glucose curves are stable and forgiving. Families feel hope. Duration: weeks to 2 years, longer in older-onset patients." },
+  { title: "Immune Attack Resumes", color: "#f85149", content: "Autoreactive CD8+ T-cells never stopped. GAD65, IA2 autoantibodies remain elevated. The immune assault continues silently despite clinical improvement. One by one, the surviving β-cells are eliminated. C-peptide begins to decline. Insulin requirements start creeping up again." },
+  { title: "Full Insulin Dependence", color: "#bc8cff", content: "C-peptide becomes undetectable. Endogenous insulin production is negligible. The patient enters full exogenous insulin dependence. Glycemic variability increases. The honeymoon is definitively over. Long-term management with basal-bolus insulin or closed-loop systems begins in earnest." }
+];
+
+const quizData = [
+  {
+    q: "By the time a patient is diagnosed with Type 1 Diabetes, approximately what percentage of β-cells have already been destroyed?",
+    opts: ["10–20%", "50%", "80–90%", "100%"],
+    answer: 2,
+    feedback: "Correct! This is the shocking truth. Up to 80–90% of β-cells are gone before symptoms even appear. The body was silently compensating — remaining cells working overtime — until the threshold was finally crossed.",
+    wrongFeedback: "Not quite. The correct answer is 80–90%. This is why T1DM is called a 'slow disease with an acute presentation' — the damage happens over years, but it only becomes visible at diagnosis."
+  },
+  {
+    q: "What is the MAIN mechanism behind the 'honeymoon phase' in T1DM after starting insulin?",
+    opts: [
+      "New β-cells are regenerated from stem cells",
+      "Surviving β-cells recover function when metabolic stress is relieved",
+      "The immune system stops attacking β-cells",
+      "Exogenous insulin suppresses glucagon permanently"
+    ],
+    answer: 1,
+    feedback: "Exactly! β-cell rest — relieving glucotoxicity and lipotoxicity — allows surviving (but previously dysfunctional) β-cells to recover insulin secretion. No new cells are made; old ones just start working again.",
+    wrongFeedback: "Incorrect. The honeymoon is not about new cell growth or immune suppression. It's about β-cell rest — when metabolic stress is removed by insulin therapy, the remaining β-cells recover their function temporarily."
+  },
+  {
+    q: "A parent of a newly diagnosed T1DM child says: 'The doctor says my son is in the honeymoon phase and barely needs insulin — maybe we can stop it soon.' What do you tell them?",
+    opts: [
+      "Great idea — stopping insulin will tell you if he truly has T1DM",
+      "The honeymoon is a cure — insulin can safely be reduced to zero if glucose is normal",
+      "The honeymoon is temporary. The immune attack continues silently. Stopping insulin risks DKA",
+      "Honeymoon only occurs in Type 2 Diabetes"
+    ],
+    answer: 2,
+    feedback: "Perfect clinical reasoning. The honeymoon gives false security. Autoantibodies remain elevated, CD8+ T-cells continue their attack, and stopping insulin can precipitate life-threatening DKA even if glucose seems controlled.",
+    wrongFeedback: "This is a dangerous misconception. Stopping insulin during the honeymoon risks DKA. The autoimmune attack never stopped — the clinical improvement is temporary, driven by recovering (not new) β-cells."
+  },
+  {
+    q: "Which of the following laboratory findings would MOST strongly suggest a patient is in the honeymoon phase of T1DM?",
+    opts: [
+      "Undetectable C-peptide with high glucose",
+      "Negative anti-GAD65 antibodies",
+      "Detectable C-peptide with low insulin requirements",
+      "Elevated HbA1c despite large insulin doses"
+    ],
+    answer: 2,
+    feedback: "Correct! C-peptide is the marker of endogenous insulin production (exogenous insulin does not produce C-peptide). Detectable C-peptide + low insulin requirements = surviving β-cells are still working = honeymoon phase.",
+    wrongFeedback: "The best marker is C-peptide. Since it's only produced alongside endogenous insulin (not injected insulin), detectable C-peptide with lower-than-expected insulin requirements = β-cells still functioning = honeymoon."
+  },
+  {
+    q: "A patient has HLA-DR4 genotype and is found to have anti-GAD65 AND anti-IA2 antibodies, but completely normal fasting glucose. How would you STAGE this according to modern T1DM classification?",
+    opts: [
+      "No T1DM — wait until glucose is abnormal to diagnose",
+      "Stage 1 T1DM — pre-symptomatic, normoglycemic",
+      "Stage 3 T1DM — symptomatic onset",
+      "Type 2 Diabetes — antibodies are irrelevant"
+    ],
+    answer: 1,
+    feedback: "Excellent! Per modern T1DM staging: Stage 1 = ≥2 autoantibodies + normoglycemia. This patient has disease — they just haven't lost enough β-cells to show dysglycemia yet. This is the window for immunotherapy like teplizumab.",
+    wrongFeedback: "Modern T1DM is staged before symptoms appear. ≥2 autoantibodies + normoglycemia = Stage 1 T1DM. The disease exists; symptoms haven't arrived yet. This staging was established to enable early intervention."
+  },
+  {
+    q: "A 45-year-old T1DM patient diagnosed 30 years ago says 'My C-peptide came back at a barely detectable low level.' What does this tell you?",
+    opts: [
+      "The lab made an error — C-peptide must be zero after 30 years",
+      "He has been misdiagnosed — he must have MODY or Type 2",
+      "A tiny residual β-cell population may have survived, consistent with research showing non-zero β-cell mass in long-standing T1DM",
+      "He developed a new pancreatic tumor producing insulin"
+    ],
+    answer: 2,
+    feedback: "Excellent advanced understanding! Point 8 on the diagram — β-cell mass is almost never truly zero. Autopsy studies confirm small residual β-cell populations in some long-standing T1DM patients. This has implications for regenerative therapies.",
+    wrongFeedback: "Studies have confirmed that β-cell mass is not always zero in long-standing T1DM. Small residual populations can survive for decades. This is clinically significant for regenerative medicine and explains rare cases of detectable C-peptide."
+  }
+];
+
+// ══════════════════════════════════════════════
+// TOOLTIP
+// ══════════════════════════════════════════════
+const tooltip = document.getElementById('tooltip');
+function showTT(e, num) {
+  const d = tooltipData[num];
+  document.getElementById('tt-num').textContent = `Marker ${num}`;
+  document.getElementById('tt-title').textContent = d.title;
+  document.getElementById('tt-body').textContent = d.body;
+  tooltip.classList.add('show');
+  positionTooltip(e);
+}
+function hideTT() { tooltip.classList.remove('show'); }
+function positionTooltip(e) {
+  const r = e.target.closest('.diagram-wrapper').getBoundingClientRect();
+  const x = e.clientX - r.left + 15;
+  const y = e.clientY - r.top + 15;
+  tooltip.style.left = Math.min(x, r.width - 280) + 'px';
+  tooltip.style.top = Math.max(y - 80, 10) + 'px';
+}
+document.getElementById('mainSVG').addEventListener('mousemove', e => {
+  if (tooltip.classList.contains('show')) positionTooltip(e);
+});
+
+// ══════════════════════════════════════════════
+// DIAGRAM CONTROLS
+// ══════════════════════════════════════════════
+function toggleLayer(layer, btn) {
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const immune = document.querySelectorAll('.immune-layer');
+  const glucose = document.querySelectorAll('.glucose-layer');
+  const cpeptide = document.querySelectorAll('.cpeptide-layer');
+  const allEls = [...immune, ...glucose, ...cpeptide];
+  allEls.forEach(el => el.style.opacity = '1');
+  if (layer === 'immune') { glucose.forEach(e=>e.style.opacity='0.15'); cpeptide.forEach(e=>e.style.opacity='0.15'); }
+  if (layer === 'glucose') { immune.forEach(e=>e.style.opacity='0.15'); cpeptide.forEach(e=>e.style.opacity='0.15'); }
+  if (layer === 'cpeptide') { immune.forEach(e=>e.style.opacity='0.15'); glucose.forEach(e=>e.style.opacity='0.15'); }
+}
+
+function animateCurves() {
+  const r = document.getElementById('redCurve');
+  const b = document.getElementById('blueCurve');
+  r.classList.remove('drawn'); b.classList.remove('drawn');
+  void r.offsetWidth;
+  r.classList.add('drawn'); b.classList.add('drawn');
+}
+// Auto-animate on load
+window.addEventListener('load', () => setTimeout(animateCurves, 500));
+
+// ══════════════════════════════════════════════
+// STEPS
+// ══════════════════════════════════════════════
+function buildSteps() {
+  const grid = document.getElementById('stepsGrid');
+  grid.innerHTML = stepsData.map((s, i) => `
+    <div class="step-item" id="step-${i}" onclick="toggleStep(${i})">
+      <div class="step-left">
+        <div class="step-num">${s.num}</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-content">
+        <span class="step-tag" style="color:${s.tagColor};background:${s.tagBg}">${s.tag}</span>
+        <div class="step-title">${s.title}</div>
+        <div class="step-body">
+          <p style="margin-bottom:0.75rem">${s.body}</p>
+          <div class="step-detail" style="border-color:${s.tagColor}">
+            <p>${s.detail}</p>
+            <p class="analogy" style="margin-top:0.4rem">${s.analogy}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleStep(i) {
+  const el = document.getElementById(`step-${i}`);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.step-item').forEach(e => e.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
+}
+
+function openStep(i) {
+  document.getElementById('steps').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => {
+    document.querySelectorAll('.step-item').forEach(e => e.classList.remove('open'));
+    const el = document.getElementById(`step-${i}`);
+    if (el) { el.classList.add('open'); el.scrollIntoView({ behavior:'smooth', block:'center' }); }
+  }, 600);
+}
+
+// ══════════════════════════════════════════════
+// PHASE DETAILS
+// ══════════════════════════════════════════════
+function showPhase(i) {
+  const d = phaseDetails[i];
+  const box = document.getElementById('phaseDetail');
+  box.style.display = 'block';
+  box.style.borderLeftColor = d.color;
+  box.style.borderLeft = `4px solid ${d.color}`;
+  box.innerHTML = `<strong style="color:${d.color};font-size:0.9rem">${d.title}</strong><br/><br/>${d.content}`;
+  document.querySelectorAll('.phase-seg').forEach((s,j)=>{
+    s.style.outline = j===i ? `2px solid ${d.color}` : 'none';
+    s.style.outlineOffset = '-2px';
+  });
+}
+
+// ══════════════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════════════
+let quizAnswers = new Array(quizData.length).fill(null);
+let quizDone = 0;
+
+function buildQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = quizData.map((q, qi) => `
+    <div class="quiz-card" id="qcard-${qi}">
+      <div class="quiz-num">Question ${qi+1} of ${quizData.length}</div>
+      <div class="quiz-q">${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((opt, oi) => `
+          <button class="quiz-opt" id="qopt-${qi}-${oi}" onclick="answerQ(${qi},${oi})">${opt}</button>
+        `).join('')}
+      </div>
+      <div class="quiz-feedback" id="qfb-${qi}"></div>
+    </div>
+  `).join('');
+}
+
+function answerQ(qi, oi) {
+  if (quizAnswers[qi] !== null) return;
+  quizAnswers[qi] = oi;
+  const q = quizData[qi];
+  const card = document.getElementById(`qcard-${qi}`);
+  const fb = document.getElementById(`qfb-${qi}`);
+  const correct = oi === q.answer;
+
+  // Disable all options for this question
+  q.opts.forEach((_, i) => {
+    const btn = document.getElementById(`qopt-${qi}-${i}`);
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('reveal-correct');
+  });
+
+  const chosen = document.getElementById(`qopt-${qi}-${oi}`);
+  chosen.classList.add(correct ? 'selected-correct' : 'selected-wrong');
+  card.classList.add(correct ? 'correct' : 'wrong');
+
+  fb.className = `quiz-feedback show ${correct ? 'ok' : 'fail'}`;
+  fb.innerHTML = `<strong>${correct ? '✅ Correct!' : '❌ Not quite.'}</strong> ${correct ? q.feedback : q.wrongFeedback}`;
+
+  quizDone++;
+  if (quizDone === quizData.length) setTimeout(showScore, 800);
+}
+
+function showScore() {
+  const correct = quizData.filter((q,i) => quizAnswers[i] === q.answer).length;
+  const pct = Math.round((correct/quizData.length)*100);
+  const sb = document.getElementById('scoreBoard');
+  sb.classList.add('show');
+  document.getElementById('scoreBig').textContent = `${correct}/${quizData.length}`;
+  document.getElementById('scoreBig').style.color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+  const msgs = {
+    100: "Phenomenal! You've mastered the natural history of T1DM. 🏆",
+    83: "Excellent work — strong grasp of the key concepts. 🌟",
+    66: "Good understanding — review the stages you missed and try again. 📚",
+    50: "Decent start — spend more time with the interactive diagram! 🎯",
+    0: "Keep going! Review the steps and try again. You'll get it. 💪"
+  };
+  const tier = pct===100?100:pct>=83?83:pct>=66?66:pct>=50?50:0;
+  document.getElementById('scoreMsg').textContent = msgs[tier];
+  sb.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+function resetQuiz() {
+  quizAnswers = new Array(quizData.length).fill(null);
+  quizDone = 0;
+  document.getElementById('scoreBoard').classList.remove('show');
+  buildQuiz();
+  document.getElementById('quiz').scrollIntoView({ behavior:'smooth' });
+}
+
+// ══════════════════════════════════════════════
+// WALKTHROUGH
+// ══════════════════════════════════════════════
+const wtSteps = [
+  {
+    title: "Welcome to the T1DM Journey",
+    body: "We're going to explore how Type 1 Diabetes develops — from before birth all the way to lifelong management. Here's the key insight: this disease starts years, even decades, before anyone notices. By the time a patient is diagnosed, the battle is mostly over.",
+    analogy: "🗺️ Think of this as a crime investigation — the 'scene' (diagnosis) is just where we find out. The 'crime' happened long before."
+  },
+  {
+    title: "Your Genes: The Blueprint",
+    body: "Certain HLA gene variants (DR3, DR4) are found in 90% of T1DM patients. These genes control how your immune system tells friend from foe. With the wrong variant, autoreactive T-cells escape the thymus without being deleted — the seeds of future destruction are planted.",
+    analogy: "🔫 Genes load the gun — but alone they're not enough. About 15-20% of people carry these genes; only 0.3% get T1DM. Something else must pull the trigger."
+  },
+  {
+    title: "The Trigger: Environment",
+    body: "Viral infections (Coxsackievirus B is the biggest suspect), gut dysbiosis, vitamin D deficiency, and other environmental factors provide the spark. Molecular mimicry — where a viral protein looks like a β-cell protein — may cause the immune system to accidentally attack the pancreas.",
+    analogy: "🎭 Molecular mimicry: the virus wears a mask that looks like your β-cells. The immune system kills both — the virus AND the cells it resembled."
+  },
+  {
+    title: "The Long Silent War",
+    body: "For years — sometimes over a decade — the immune system quietly destroys β-cells. The remaining cells compensate by working overtime. Blood glucose stays normal. No symptoms. No idea this is happening. The 'red curve' is slowly falling, but we can only detect this via islet autoantibody testing.",
+    analogy: "🏭 The factory is losing workers one by one. The survivors work harder. Output stays the same. Until there are too few workers left to keep up."
+  },
+  {
+    title: "The Tipping Point: Diagnosis",
+    body: "When 80–90% of β-cells are destroyed, the remaining workers can no longer compensate. Glucose rises above the kidney threshold, spills into urine, drags water with it → polyuria, polydipsia, weight loss. Classic DKA may occur. This is what we traditionally call 'the start' — but it's actually near the end of the immune process.",
+    analogy: "💧 The dam holds for years as water rises. At 90% capacity, it finally breaks. The flood wasn't sudden — the pressure was building for years."
+  },
+  {
+    title: "The Honeymoon — A Precious Window",
+    body: "After insulin therapy starts, metabolic stress is removed from surviving β-cells. They recover function — 'β-cell rest.' Insulin requirements drop. C-peptide becomes detectable. The patient (and family) feels hope. This lasts weeks to 2 years. But the autoimmune attack never stopped — it's still happening silently beneath the surface.",
+    analogy: "🕯️ The surviving candles burn brighter when the smoke is cleared — but the room is getting smaller, and more candles will be snuffed soon."
+  },
+  {
+    title: "Why Residual β-Cells Matter",
+    body: "Even in 50-year T1DM veterans, tiny β-cell clusters can survive. They make negligible insulin clinically, but they represent a biological anchor for future therapies. Stem cell-derived islet transplants, immune tolerance induction, and encapsulated β-cell therapies all build on this principle.",
+    analogy: "🌱 Embers under ash. Not dead — just waiting. Modern medicine is learning to fan those embers back to life, safely, without the immune system extinguishing them again."
+  },
+  {
+    title: "The Stages of T1DM — A New Framework",
+    body: "Modern classification: Stage 1 (≥2 autoantibodies, normoglycemia) → Stage 2 (≥2 autoantibodies, dysglycemia) → Stage 3 (symptomatic). Stage 1 and 2 are NOW considered T1DM — even without symptoms. FDA-approved teplizumab can delay Stage 3 onset by 2+ years when given at Stage 2.",
+    analogy: "🚦 We used to only diagnose at Stage 3 (the crash). Now we can see the yellow light at Stage 2 — and apply the brakes before the collision."
+  }
+];
+let wtCurrent = 0;
+
+function startWalkthrough() {
+  wtCurrent = 0;
+  renderWT();
+  document.getElementById('wtOverlay').classList.add('open');
+}
+function closeWalkthrough() { document.getElementById('wtOverlay').classList.remove('open'); }
+function nextWT() {
+  if (wtCurrent < wtSteps.length - 1) { wtCurrent++; renderWT(); }
+  else closeWalkthrough();
+}
+function prevWT() { if (wtCurrent > 0) { wtCurrent--; renderWT(); } }
+
+function renderWT() {
+  const s = wtSteps[wtCurrent];
+  document.getElementById('wtStepCount').textContent = `Step ${wtCurrent+1} of ${wtSteps.length}`;
+  document.getElementById('wtTitle').textContent = s.title;
+  document.getElementById('wtBody').textContent = s.body;
+  document.getElementById('wtAnalogy').textContent = s.analogy;
+  document.getElementById('btnPrev').style.opacity = wtCurrent === 0 ? '0.3' : '1';
+  document.getElementById('btnNext').textContent = wtCurrent === wtSteps.length-1 ? 'Finish ✓' : 'Next →';
+  const dots = document.getElementById('wtDots');
+  dots.innerHTML = wtSteps.map((_,i) => `<div class="wt-dot ${i===wtCurrent?'active':''}"></div>`).join('');
+}
+
+document.getElementById('wtOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('wtOverlay')) closeWalkthrough();
+});
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+buildSteps();
+buildQuiz();
+
+// Smooth nav active state
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#'+e.target.id));
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

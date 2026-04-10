@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SLE — Medications & Pathogenesis</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060912;
+  --surface: #0c1120;
+  --surface2: #111928;
+  --border: #1a2540;
+  --text: #d4dce8;
+  --dim: #5a7096;
+  --spine: #1e3060;
+  --node-bg: #0d1a30;
+  --node-stroke: #1e3558;
+  --node-text: #5a88b8;
+  /* drug class colors */
+  --c-anti: #f59e0b;
+  --c-conv: #60a5fa;
+  --c-cal: #34d399;
+  --c-bcell: #c084fc;
+  --c-ifn: #f472b6;
+  --c-symp: #94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Lora',serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* grain overlay */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.5;
+}
+
+/* HEADER */
+header{
+  background:linear-gradient(180deg,#0b0f1d 0%,transparent 100%);
+  padding:2rem 2rem 1.2rem;
+  border-bottom:1px solid var(--border);
+  position:relative;z-index:10;
+}
+.header-inner{
+  max-width:1400px;margin:0 auto;
+  display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+}
+.header-kicker{
+  font-family:'Fira Code',monospace;
+  font-size:0.65rem;letter-spacing:0.2em;
+  color:var(--c-ifn);
+  text-transform:uppercase;
+  margin-bottom:0.5rem;
+  opacity:0.8;
+}
+h1{
+  font-family:'Cinzel',serif;
+  font-size:clamp(1.6rem,3.5vw,2.8rem);
+  font-weight:700;
+  letter-spacing:0.04em;
+  line-height:1.1;
+  background:linear-gradient(135deg,#e8eef6 0%,#89b4e8 60%,var(--c-ifn) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.header-sub{color:var(--dim);font-size:0.88rem;font-style:italic;margin-top:0.3rem;max-width:500px;line-height:1.5}
+.legend{display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center}
+.leg{
+  display:flex;align-items:center;gap:0.4rem;
+  font-family:'Fira Code',monospace;font-size:0.65rem;
+  color:var(--dim);letter-spacing:0.05em;
+}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* APP LAYOUT */
+.app-wrap{
+  display:grid;
+  grid-template-columns:420px 1fr;
+  min-height:calc(100vh - 90px);
+  max-width:1400px;margin:0 auto;
+  position:relative;z-index:1;
+}
+@media(max-width:900px){
+  .app-wrap{grid-template-columns:1fr}
+}
+
+/* PATHWAY PANEL */
+.pathway-panel{
+  border-right:1px solid var(--border);
+  padding:1.5rem 1rem 2rem;
+  position:sticky;top:0;height:calc(100vh - 90px);
+  overflow-y:auto;
+  background:linear-gradient(180deg,var(--bg) 0%,#070b14 100%);
+}
+.pathway-panel::-webkit-scrollbar{width:4px}
+.pathway-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.pathway-title{
+  font-family:'Cinzel',serif;font-size:0.8rem;
+  letter-spacing:0.15em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:1.2rem;
+  text-align:center;padding-bottom:0.8rem;
+  border-bottom:1px solid var(--border);
+}
+svg#pathway{width:100%;height:auto;overflow:visible}
+
+/* DRUG PANEL */
+.drug-panel{padding:1.5rem 1.5rem 3rem;overflow-y:auto}
+
+/* CLASS FILTER TABS */
+.class-tabs{
+  display:flex;gap:0.4rem;flex-wrap:wrap;
+  margin-bottom:1.5rem;
+}
+.ctab{
+  font-family:'Fira Code',monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.35rem 0.85rem;border-radius:3px;
+  border:1px solid transparent;
+  background:var(--surface);
+  color:var(--dim);
+  cursor:pointer;transition:all 0.2s;
+}
+.ctab:hover{color:var(--text)}
+.ctab.active{color:#fff}
+.ctab[data-class="all"].active{border-color:var(--dim);color:var(--text);background:var(--surface2)}
+.ctab[data-class="antimalarial"].active{border-color:var(--c-anti);color:var(--c-anti);background:rgba(245,158,11,0.08)}
+.ctab[data-class="conventional"].active{border-color:var(--c-conv);color:var(--c-conv);background:rgba(96,165,250,0.08)}
+.ctab[data-class="calcineurin"].active{border-color:var(--c-cal);color:var(--c-cal);background:rgba(52,211,153,0.08)}
+.ctab[data-class="bcell"].active{border-color:var(--c-bcell);color:var(--c-bcell);background:rgba(192,132,252,0.08)}
+.ctab[data-class="ifn"].active{border-color:var(--c-ifn);color:var(--c-ifn);background:rgba(244,114,182,0.08)}
+.ctab[data-class="symptomatic"].active{border-color:var(--c-symp);color:var(--c-symp);background:rgba(148,163,184,0.08)}
+
+/* DRUG CARDS GRID */
+.drug-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:0.9rem;
+}
+.drug-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:1.1rem;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;overflow:hidden;
+}
+.drug-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--card-color,var(--dim));
+  opacity:0.7;transition:opacity 0.2s;
+}
+.drug-card:hover{border-color:var(--card-color,var(--dim));transform:translateY(-2px)}
+.drug-card:hover::before{opacity:1}
+.drug-card.selected{border-color:var(--card-color);background:var(--surface2)}
+.drug-card.selected::before{opacity:1;height:3px}
+.drug-card.hidden{display:none}
+
+.dc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.5rem}
+.dc-name{
+  font-family:'Cinzel',serif;font-size:0.9rem;
+  font-weight:600;line-height:1.3;
+}
+.dc-short{
+  font-family:'Fira Code',monospace;font-size:0.7rem;
+  padding:0.2rem 0.5rem;border-radius:3px;
+  border:1px solid var(--card-color,var(--border));
+  color:var(--card-color,var(--dim));
+  background:rgba(0,0,0,0.3);
+  flex-shrink:0;
+}
+.dc-target{
+  font-family:'Fira Code',monospace;font-size:0.68rem;
+  color:var(--card-color,var(--dim));
+  margin-bottom:0.5rem;letter-spacing:0.05em;
+  opacity:0.9;
+}
+.dc-mech{font-size:0.78rem;color:var(--dim);line-height:1.5}
+.dc-status{
+  margin-top:0.7rem;
+  font-family:'Fira Code',monospace;font-size:0.62rem;
+  letter-spacing:0.05em;
+  padding:0.2rem 0.5rem;border-radius:2px;
+  display:inline-block;
+}
+.dc-status.approved{color:#4ade80;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25)}
+.dc-status.offlabel{color:var(--c-anti);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)}
+
+/* DETAIL PANEL */
+.detail-panel{
+  margin-top:2rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  display:none;
+}
+.detail-panel.visible{display:block;animation:slideUp 0.3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.dp-header{
+  padding:1.2rem 1.4rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:1rem;
+}
+.dp-color-bar{width:4px;height:48px;border-radius:2px;flex-shrink:0}
+.dp-title{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:600}
+.dp-subtitle{font-size:0.8rem;color:var(--dim);margin-top:0.15rem;font-style:italic}
+.dp-body{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+}
+@media(max-width:700px){.dp-body{grid-template-columns:1fr}}
+.dp-col{padding:1.2rem 1.4rem;border-right:1px solid var(--border)}
+.dp-col:last-child{border-right:none}
+.dp-col-label{
+  font-family:'Fira Code',monospace;font-size:0.65rem;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:0.6rem;
+}
+.dp-col-text{font-size:0.83rem;line-height:1.65;color:var(--text)}
+.dp-col-text strong{font-weight:600;color:var(--text)}
+.dp-col-text em{font-style:italic;color:var(--dim)}
+.evidence-pill{
+  display:inline-block;
+  font-family:'Fira Code',monospace;font-size:0.65rem;
+  padding:0.2rem 0.6rem;border-radius:3px;
+  margin-top:0.6rem;
+}
+
+/* SVG STYLES */
+.node-base{transition:all 0.35s ease}
+.node-circle{
+  fill:var(--node-bg);
+  stroke:var(--node-stroke);
+  stroke-width:1.5;
+  transition:all 0.35s ease;
+}
+.node-text{
+  font-family:'Fira Code',monospace;
+  font-size:7.5px;
+  fill:var(--node-text);
+  text-anchor:middle;
+  transition:fill 0.35s ease;
+  pointer-events:none;
+}
+.node-text.main{font-size:8px;font-weight:500}
+.spine-line{
+  stroke:var(--spine);stroke-width:1.5;fill:none;
+  transition:stroke 0.35s ease;
+}
+.spine-dot{fill:var(--spine);transition:fill 0.35s ease}
+
+/* Active node states */
+.node-active .node-circle{stroke-width:2.5}
+.node-pulse .node-circle{animation:pulseNode 1.5s ease infinite}
+@keyframes pulseNode{
+  0%,100%{stroke-opacity:1}50%{stroke-opacity:0.5}
+}
+
+/* Drug indicator dots on pathway */
+.drug-indicator{
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.drug-indicator:hover{transform:scale(1.2)}
+
+/* scroll */
+.drug-panel::-webkit-scrollbar{width:4px}
+.drug-panel::-webkit-scrollbar-thumb{background:var(--border)}
+
+@media(max-width:900px){
+  .pathway-panel{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  svg#pathway{max-width:400px;margin:0 auto;display:block}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-kicker">Rheumatology · Immunopharmacology</div>
+      <h1>Systemic Lupus Erythematosus</h1>
+      <p class="header-sub">Drug mechanisms mapped to the immunopathological cascade — click any drug to illuminate its target in the pathway</p>
+    </div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:var(--c-anti)"></div>Antimalarial</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--c-conv)"></div>Conventional IS</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--c-cal)"></div>Calcineurin-I</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--c-bcell)"></div>B/Plasma Cell</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--c-ifn)"></div>IFN Pathway</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--c-symp)"></div>Symptomatic</div>
+    </div>
+  </div>
+</header>
+
+<div class="app-wrap">
+
+  <!-- LEFT: PATHWAY -->
+  <div class="pathway-panel">
+    <div class="pathway-title">SLE Immunopathogenesis</div>
+    <svg id="pathway" viewBox="0 0 380 1020" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow-anti" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="1 0.6 0 0 0  0.6 0.4 0 0 0  0 0 0 0 0  0 0 0 1 0" result="colored"/>
+          <feMerge><feMergeNode in="colored"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow-conv" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="0.2 0 0 0 0  0.4 0 0 0 0  1 0 0 0 0.5  0 0 0 1 0" result="colored"/>
+          <feMerge><feMergeNode in="colored"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow-cal" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0  1 0 0 0 0  0.5 0 0 0 0  0 0 0 1 0" result="colored"/>
+          <feMerge><feMergeNode in="colored"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow-bcell" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="0.5 0 0 0 0  0 0 0 0 0  1 0 0 0 0.8  0 0 0 1 0" result="colored"/>
+          <feMerge><feMergeNode in="colored"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow-ifn" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0.2  0 0 0 0 0  0.5 0 0 0 0.4  0 0 0 1 0" result="colored"/>
+          <feMerge><feMergeNode in="colored"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#1e3060"/>
+        </marker>
+        <marker id="arr-active" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path id="arr-active-path" d="M0,0 L6,3 L0,6 Z" fill="#1e3060"/>
+        </marker>
+      </defs>
+
+      <!-- SPINE LINES -->
+      <!-- Main vertical spine -->
+      <line class="spine-line" x1="190" y1="80" x2="190" y2="160" marker-end="url(#arr)"/>
+      <line class="spine-line" x1="190" y1="192" x2="190" y2="245" marker-end="url(#arr)"/>
+      <line class="spine-line" x1="190" y1="278" x2="190" y2="330" marker-end="url(#arr)"/>
+      <line class="spine-line" x1="190" y1="362" x2="190" y2="415" marker-end="url(#arr)"/>
+      <line class="spine-line" x1="190" y1="447" x2="190" y2="500" marker-end="url(#arr)"/>
+      <!-- Branch to T cells (left) -->
+      <path class="spine-line" d="M175,530 Q100,550 100,565" marker-end="url(#arr)"/>
+      <!-- Branch to BLyS (right) -->
+      <path class="spine-line" d="M205,530 Q290,550 290,565" marker-end="url(#arr)"/>
+      <!-- T cell → B cell -->
+      <path class="spine-line" d="M115,630 Q160,650 170,665" marker-end="url(#arr)"/>
+      <!-- BLyS → B cell -->
+      <path class="spine-line" d="M278,630 Q230,650 210,665" marker-end="url(#arr)"/>
+      <!-- Lower spine -->
+      <line class="spine-line" x1="190" y1="700" x2="190" y2="750" marker-end="url(#arr)"/>
+      <line class="spine-line" x1="190" y1="785" x2="190" y2="840" marker-end="url(#arr)"/>
+      <line class="spine-line" x1="190" y1="875" x2="190" y2="930" marker-end="url(#arr)"/>
+
+      <!-- NODE GROUPS -->
+
+      <!-- n_triggers -->
+      <g class="node-base" id="node-n_triggers">
+        <circle class="node-circle" cx="190" cy="48" r="38"/>
+        <text class="node-text main" x="190" y="44">ENVIRON.</text>
+        <text class="node-text main" x="190" y="55">TRIGGERS</text>
+        <text class="node-text" x="190" y="64" style="font-size:6.5px;opacity:0.7">UV · Infections · Drugs</text>
+      </g>
+
+      <!-- n_apoptosis -->
+      <g class="node-base" id="node-n_apoptosis">
+        <circle class="node-circle" cx="190" cy="176" r="36"/>
+        <text class="node-text main" x="190" y="170">APOPTOTIC</text>
+        <text class="node-text main" x="190" y="181">DEBRIS + NETs</text>
+        <text class="node-text" x="190" y="191" style="font-size:6px;opacity:0.7">Impaired clearance</text>
+      </g>
+
+      <!-- n_tlr79 -->
+      <g class="node-base" id="node-n_tlr79">
+        <circle class="node-circle" cx="190" cy="262" r="34"/>
+        <text class="node-text main" x="190" y="256">TLR7 / TLR9</text>
+        <text class="node-text main" x="190" y="267">SIGNALING</text>
+        <text class="node-text" x="190" y="277" style="font-size:6px;opacity:0.7">Endosomal · pDCs</text>
+      </g>
+
+      <!-- n_ifn -->
+      <g class="node-base" id="node-n_ifn">
+        <circle class="node-circle" cx="190" cy="346" r="34"/>
+        <text class="node-text main" x="190" y="340">TYPE I IFN</text>
+        <text class="node-text main" x="190" y="351">IFN-α / IFN-β</text>
+        <text class="node-text" x="190" y="361" style="font-size:6px;opacity:0.7">"IFN Signature"</text>
+      </g>
+
+      <!-- n_jak -->
+      <g class="node-base" id="node-n_jak">
+        <circle class="node-circle" cx="190" cy="431" r="34"/>
+        <text class="node-text main" x="190" y="425">JAK1/2-STAT</text>
+        <text class="node-text main" x="190" y="436">SIGNALING</text>
+        <text class="node-text" x="190" y="446" style="font-size:6px;opacity:0.7">Cytokine signal transduction</text>
+      </g>
+
+      <!-- n_apc -->
+      <g class="node-base" id="node-n_apc">
+        <circle class="node-circle" cx="190" cy="516" r="34"/>
+        <text class="node-text main" x="190" y="510">APC + ANTIGEN</text>
+        <text class="node-text main" x="190" y="521">PRESENTATION</text>
+        <text class="node-text" x="190" y="531" style="font-size:6px;opacity:0.7">MHC II · Nuclear peptides</text>
+      </g>
+
+      <!-- n_tcell -->
+      <g class="node-base" id="node-n_tcell">
+        <circle class="node-circle" cx="100" cy="600" r="34"/>
+        <text class="node-text main" x="100" y="594">T CELL</text>
+        <text class="node-text main" x="100" y="605">ACTIVATION</text>
+        <text class="node-text" x="100" y="615" style="font-size:6px;opacity:0.7">Th17 ↑ Tfh ↑ Treg ↓</text>
+      </g>
+
+      <!-- n_blys -->
+      <g class="node-base" id="node-n_blys">
+        <circle class="node-circle" cx="285" cy="600" r="34"/>
+        <text class="node-text main" x="285" y="594">BLyS / BAFF</text>
+        <text class="node-text main" x="285" y="605">SURVIVAL</text>
+        <text class="node-text" x="285" y="615" style="font-size:6px;opacity:0.7">B cell survival factor</text>
+      </g>
+
+      <!-- n_bcell -->
+      <g class="node-base" id="node-n_bcell">
+        <circle class="node-circle" cx="190" cy="683" r="34"/>
+        <text class="node-text main" x="190" y="677">B CELL</text>
+        <text class="node-text main" x="190" y="688">ACTIVATION</text>
+        <text class="node-text" x="190" y="698" style="font-size:6px;opacity:0.7">Autoreactive clones</text>
+      </g>
+
+      <!-- n_plasma -->
+      <g class="node-base" id="node-n_plasma">
+        <circle class="node-circle" cx="190" cy="768" r="34"/>
+        <text class="node-text main" x="190" y="762">PLASMA</text>
+        <text class="node-text main" x="190" y="773">CELLS</text>
+        <text class="node-text" x="190" y="783" style="font-size:6px;opacity:0.7">Long-lived · CD38+</text>
+      </g>
+
+      <!-- n_autoab -->
+      <g class="node-base" id="node-n_autoab">
+        <circle class="node-circle" cx="190" cy="858" r="34"/>
+        <text class="node-text main" x="190" y="852">AUTOANTI-</text>
+        <text class="node-text main" x="190" y="863">BODIES</text>
+        <text class="node-text" x="190" y="873" style="font-size:5.5px;opacity:0.7">Anti-dsDNA · Anti-Sm · Anti-Ro</text>
+      </g>
+
+      <!-- n_damage -->
+      <g class="node-base" id="node-n_damage">
+        <circle class="node-circle" cx="190" cy="955" r="42" stroke-dasharray="5,3"/>
+        <text class="node-text main" x="190" y="946" style="fill:#6b7280">IMMUNE COMPLEX</text>
+        <text class="node-text main" x="190" y="957" style="fill:#6b7280">→ COMPLEMENT</text>
+        <text class="node-text main" x="190" y="968" style="fill:#6b7280">END-ORGAN DAMAGE</text>
+      </g>
+
+    </svg>
+
+    <!-- Drug target legend for selected drug -->
+    <div id="pathway-drug-info" style="display:none;margin-top:1rem;padding:0.8rem 1rem;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
+      <div style="font-family:'Fira Code',monospace;font-size:0.65rem;color:var(--dim);margin-bottom:0.3rem;letter-spacing:0.1em;text-transform:uppercase">Selected Drug</div>
+      <div id="pathway-drug-name" style="font-family:'Cinzel',serif;font-size:0.95rem;font-weight:600"></div>
+      <div id="pathway-drug-target-label" style="font-family:'Fira Code',monospace;font-size:0.7rem;margin-top:0.2rem;opacity:0.8"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: DRUG BROWSER -->
+  <div class="drug-panel">
+    <div class="class-tabs" id="class-tabs">
+      <button class="ctab active" data-class="all" onclick="filterClass('all',this)">All Drugs</button>
+      <button class="ctab" data-class="antimalarial" onclick="filterClass('antimalarial',this)">Antimalarial</button>
+      <button class="ctab" data-class="conventional" onclick="filterClass('conventional',this)">Conventional IS</button>
+      <button class="ctab" data-class="calcineurin" onclick="filterClass('calcineurin',this)">Calcineurin-I</button>
+      <button class="ctab" data-class="bcell" onclick="filterClass('bcell',this)">B/Plasma Cell</button>
+      <button class="ctab" data-class="ifn" onclick="filterClass('ifn',this)">IFN Pathway</button>
+      <button class="ctab" data-class="symptomatic" onclick="filterClass('symptomatic',this)">Symptomatic</button>
+    </div>
+
+    <div class="drug-grid" id="drug-grid">
+      <!-- Cards injected by JS -->
+    </div>
+
+    <!-- Detail panel -->
+    <div class="detail-panel" id="detail-panel">
+      <div class="dp-header">
+        <div class="dp-color-bar" id="dp-color-bar"></div>
+        <div>
+          <div class="dp-title" id="dp-title"></div>
+          <div class="dp-subtitle" id="dp-subtitle"></div>
+        </div>
+      </div>
+      <div class="dp-body">
+        <div class="dp-col">
+          <div class="dp-col-label">Mechanism of Action</div>
+          <div class="dp-col-text" id="dp-moa"></div>
+        </div>
+        <div class="dp-col">
+          <div class="dp-col-label">Clinical Use &amp; Indication</div>
+          <div class="dp-col-text" id="dp-use"></div>
+        </div>
+        <div class="dp-col">
+          <div class="dp-col-label">Evidence &amp; Monitoring</div>
+          <div class="dp-col-text" id="dp-evidence"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const CLASS_COLORS = {
+  antimalarial: '#f59e0b',
+  conventional:  '#60a5fa',
+  calcineurin:   '#34d399',
+  bcell:         '#c084fc',
+  ifn:           '#f472b6',
+  symptomatic:   '#94a3b8'
+};
+
+const drugs = [
+  {
+    id:'hcq', name:'Hydroxychloroquine', short:'HCQ',
+    class:'antimalarial', color:'#f59e0b',
+    targets:['n_tlr79','n_apoptosis'],
+    targetLabel:'TLR7/9 Endosomal Signaling',
+    status:'approved', statusText:'FDA approved · All SLE',
+    moa:'Accumulates in lysosomes → raises endosomal pH → <strong>inhibits TLR7 and TLR9 nucleic-acid sensing</strong> → blocks pDC activation and downstream type I IFN induction. Also impairs MHC-II antigen presentation and inhibits platelet aggregation.',
+    use:'Standard of care in <em>all</em> SLE patients unless contraindicated (retinal disease). Reduces flares, damage accrual, thrombosis risk. Pregnancy-safe. Continue throughout pregnancy and lactation.',
+    evidence:'<strong>LUMINA cohort:</strong> HCQ reduces mortality, organ damage, and thrombotic events over 10+ years. Also shown to reduce risk of SLE flares post-partum. <em>Dose:</em> ≤5 mg/kg/day ideal body weight to minimise retinopathy.<br><div class="evidence-pill" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b">Monitoring: Annual ophthalmology after 5 years</div>'
+  },
+  {
+    id:'pred', name:'Glucocorticoids', short:'GC',
+    class:'conventional', color:'#60a5fa',
+    targets:['n_ifn','n_jak','n_apc','n_tcell','n_bcell','n_plasma','n_damage'],
+    targetLabel:'Broad: IFN, JAK-STAT, T/B cells, Complement',
+    status:'approved', statusText:'Cornerstone · Acute flares',
+    moa:'Binds glucocorticoid receptor → nuclear translocation → suppresses NF-κB and AP-1 → blocks transcription of IL-1β, IL-6, TNF-α, IFN-α, and ICAM-1. Induces lymphocyte apoptosis; reduces antigen presentation; suppresses complement activation indirectly via anti-inflammatory effects.',
+    use:'Acute SLE flares and severe organ involvement (nephritis, CNS, haematologic). Goal: bridge to steroid-sparing agents. <em>Taper as fast as safely possible.</em> High-dose pulse (methylprednisolone 500–1000 mg IV × 3 days) for severe/life-threatening flares (class III/IV LN, CNS lupus).',
+    evidence:'Essential for acute disease control; no dedicated SLE RCT due to ethical constraints. Chronic use: minimise to <7.5 mg/day prednisolone equivalent.<br><div class="evidence-pill" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60a5fa">Monitoring: BP, glucose, BMD, lipids, cataracts, adrenal axis</div>'
+  },
+  {
+    id:'aza', name:'Azathioprine', short:'AZA',
+    class:'conventional', color:'#60a5fa',
+    targets:['n_tcell','n_bcell'],
+    targetLabel:'T & B Lymphocyte Proliferation',
+    status:'offlabel', statusText:'Off-label · Maintenance',
+    moa:'Pro-drug → 6-mercaptopurine → 6-thioguanine nucleotides → <strong>incorporated into DNA → false bases block purine synthesis</strong> → inhibit T and B lymphocyte proliferation. Blocks de novo purine pathway relied upon by lymphocytes.',
+    use:'Maintenance therapy for LN (after MMF induction) and non-renal SLE. <strong>Safe in pregnancy</strong> — preferred steroid-sparing agent during gestation. Used for skin, musculoskeletal, haematologic, and serositis manifestations.',
+    evidence:'Inferior to MMF for LN induction but comparable for maintenance in some cohorts. <strong>THESES trial</strong> context: commonly used in African/Caribbean populations.<br><div class="evidence-pill" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60a5fa">Check TPMT/NUDT15 genotype before starting. FBC monitoring.</div>'
+  },
+  {
+    id:'mmf', name:'Mycophenolate Mofetil', short:'MMF',
+    class:'conventional', color:'#60a5fa',
+    targets:['n_tcell','n_bcell','n_plasma'],
+    targetLabel:'T & B Lymphocyte Proliferation (IMPDH)',
+    status:'approved', statusText:'FDA approved · Lupus Nephritis',
+    moa:'Hydrolysed to mycophenolic acid → <strong>reversibly inhibits inosine monophosphate dehydrogenase (IMPDH)</strong> → blocks de novo guanosine synthesis → selectively depletes lymphocytes (uniquely dependent on this pathway). Reduces B cell and T cell proliferation and plasma cell differentiation.',
+    use:'First-line induction and maintenance for <strong>Lupus Nephritis Class III/IV/V</strong> (ACR 2024, EULAR 2023). Standard dose: 2–3 g/day (induction), 1–2 g/day (maintenance). Comparable to cyclophosphamide with better tolerability. <em>Teratogenic — hold in pregnancy.</em>',
+    evidence:'<strong>ALMS trial:</strong> MMF non-inferior to IV cyclophosphamide for LN induction. <strong>MAINTAIN:</strong> MMF superior to AZA for LN maintenance. Now preferred first-line globally.<br><div class="evidence-pill" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60a5fa">Monitoring: FBC, renal function, LFTs, infection surveillance</div>'
+  },
+  {
+    id:'cyc', name:'Cyclophosphamide', short:'CYC',
+    class:'conventional', color:'#60a5fa',
+    targets:['n_tcell','n_bcell','n_plasma'],
+    targetLabel:'Pan-lymphocyte Alkylation / Ablation',
+    status:'approved', statusText:'FDA approved · Severe LN / CNS',
+    moa:'Alkylating agent → DNA cross-linking → lymphocyte apoptosis. <strong>Depletes both T and B lymphocytes</strong>, including long-lived plasma cells. Potent immunoablative effect. Particularly effective for rapidly progressive glomerulonephritis and neuropsychiatric SLE.',
+    use:'Reserved for <strong>severe/life-threatening SLE</strong>: diffuse proliferative LN (class III/IV), CNS lupus, pulmonary haemorrhage, vasculitis. IV low-dose Euro-Lupus regimen (500 mg q2 weeks × 6) now preferred over high-dose NIH protocol.',
+    evidence:'<strong>Euro-Lupus Nephritis Trial:</strong> Low-dose IV CYC non-inferior to high-dose for LN induction. Better toxicity profile. <strong>MAINTAIN Nephritis:</strong> induction then switch to MMF.<br><div class="evidence-pill" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60a5fa">Monitoring: Bladder (haemorrhagic cystitis — hydrate/mesna), FBC, infection, ovarian failure, malignancy (long-term)</div>'
+  },
+  {
+    id:'mtx', name:'Methotrexate', short:'MTX',
+    class:'conventional', color:'#60a5fa',
+    targets:['n_tcell','n_apc'],
+    targetLabel:'T Cell Proliferation / Anti-inflammatory',
+    status:'offlabel', statusText:'Off-label · Skin & Arthritis',
+    moa:'<strong>Inhibits dihydrofolate reductase (DHFR)</strong> → depletes tetrahydrofolate → blocks purine and pyrimidine synthesis → anti-proliferative on T cells. At low doses, promotes adenosine release → anti-inflammatory effects. Inhibits antigen presentation at high doses.',
+    use:'Predominantly for <strong>cutaneous and articular SLE</strong> — malar rash, discoid lupus, synovitis. Not used for LN. Low-dose weekly (10–25 mg/week). Steroid-sparing for mucocutaneous manifestations. <em>Teratogenic — contraindicated in pregnancy.</em>',
+    evidence:'Multiple cohort studies support efficacy for skin and joint disease. Less evidence for visceral disease compared to MMF/AZA.<br><div class="evidence-pill" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);color:#60a5fa">Folate supplementation essential. Monitoring: LFTs, FBC, renal function</div>'
+  },
+  {
+    id:'tac', name:'Tacrolimus', short:'TAC',
+    class:'calcineurin', color:'#34d399',
+    targets:['n_tcell'],
+    targetLabel:'Calcineurin → NFAT → IL-2 (T cells)',
+    status:'offlabel', statusText:'Off-label · LN / Maintenance',
+    moa:'Binds FK506-binding protein (FKBP12) → inhibits <strong>calcineurin phosphatase</strong> → prevents dephosphorylation of NFAT → <strong>blocks IL-2 gene transcription</strong> → T cell activation arrested at G1 phase. Prevents T cell help to B cells.',
+    use:'Lupus nephritis — especially membranous (class V) LN. Often used as part of <strong>multi-target therapy</strong> (MMF + tacrolimus + steroids) in Asian populations. Emerging evidence for resistant LN. Preferred over cyclosporine (better BP/lipid profile).',
+    evidence:'<strong>Multi-target therapy (MMF + TAC + GC):</strong> Superior complete remission rates vs. IV CYC in several Asian RCTs (Liu et al., Kidney Int 2015). Effective for class V membranous LN.<br><div class="evidence-pill" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34d399">Monitoring: Tacrolimus trough levels, renal function (nephrotoxicity), glucose, BP, neurotoxicity</div>'
+  },
+  {
+    id:'voc', name:'Voclosporin', short:'VCS',
+    class:'calcineurin', color:'#34d399',
+    targets:['n_tcell','n_bcell'],
+    targetLabel:'Calcineurin + Podocyte Stabilisation (LN)',
+    status:'approved', statusText:'FDA approved 2021 · Lupus Nephritis',
+    moa:'Novel calcineurin inhibitor with more consistent pharmacokinetics than tacrolimus. <strong>Blocks IL-2 → T cell activation.</strong> Additional mechanism unique to LN: <strong>stabilises podocyte synaptopodin</strong> → reduces proteinuria independent of immunosuppression. Rapid anti-proteinuric effect.',
+    use:'Lupus nephritis (class III/IV with or without V) in combination with MMF and steroids. FDA approved 2021. Rapid proteinuria reduction within 2–4 weeks. Dose: 23.7 mg twice daily.',
+    evidence:'<strong>AURORA 1 trial (NEJM 2021):</strong> Voclosporin + MMF + GC significantly higher complete renal response vs MMF + GC alone at 52 weeks (40.8% vs 22.5%). <strong>AURORA 2:</strong> sustained efficacy to 3 years.<br><div class="evidence-pill" style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34d399">Monitoring: eGFR (nephrotoxic if GFR drops), BP, tacrolimus-level interactions, infections</div>'
+  },
+  {
+    id:'beli', name:'Belimumab', short:'BLM',
+    class:'bcell', color:'#c084fc',
+    targets:['n_blys'],
+    targetLabel:'BLyS / BAFF (B cell Survival Factor)',
+    status:'approved', statusText:'FDA approved · SLE + LN',
+    moa:'<strong>Monoclonal antibody against soluble BLyS (B Lymphocyte Stimulator / BAFF)</strong> → prevents BLyS from binding to B cell receptors (BCMA, BAFF-R, TACI) → autoreactive B cell survival is reduced → fewer B cells, fewer plasma cells, reduced autoantibody production. Does not deplete existing B cells.',
+    use:'Active SLE despite standard therapy (autoantibody positive, high complement consumption). IV or SC formulations. SC 200 mg weekly widely used. <strong>Approved for Lupus Nephritis (2020)</strong> in combination with MMF/GC (BLISS-LN trial). Better outcomes in seropositive patients.',
+    evidence:'<strong>BLISS-52 & BLISS-76:</strong> Significant reduction in SLE flares vs placebo. <strong>BLISS-LN (NEJM 2020):</strong> Belimumab + standard therapy ↑ primary renal response (43% vs 32%). Post-hoc: significant survival/ESRD benefit. Also BLISS-BELIEF.<br><div class="evidence-pill" style="background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.3);color:#c084fc">Monitoring: Infusion reactions, infections (depression screening — psychiatric events reported)</div>'
+  },
+  {
+    id:'rit', name:'Rituximab', short:'RTX',
+    class:'bcell', color:'#c084fc',
+    targets:['n_bcell','n_plasma'],
+    targetLabel:'CD20+ B Cell Depletion',
+    status:'offlabel', statusText:'Off-label · Refractory SLE',
+    moa:'<strong>Anti-CD20 chimeric monoclonal antibody</strong> → depletes CD20+ B cells via ADCC, CDC, and apoptosis. CD20 expressed on pre-B to mature B cells but NOT on plasma cells or pro-B cells — provides sustained depletion with eventual reconstitution from naive B cells (less autoreactive).',
+    use:'Refractory SLE failing conventional therapy. Refractory LN (class III/IV). Off-label but widely used. Single course (1000 mg × 2, 2 weeks apart) or 375 mg/m² × 4 doses. Re-treat on B cell reconstitution + disease activity.',
+    evidence:'<strong>EXPLORER trial:</strong> Failed primary endpoint (likely design issues). <strong>LUNAR:</strong> Failed in LN. However, extensive real-world evidence and registry data (BILAG-BSR) support efficacy in refractory disease. Standard of care at many centres for resistant LN.<br><div class="evidence-pill" style="background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.3);color:#c084fc">PCP prophylaxis, monitor IgG levels (secondary hypogammaglobulinemia), PML risk (rare)</div>'
+  },
+  {
+    id:'obi', name:'Obinutuzumab', short:'OBI',
+    class:'bcell', color:'#c084fc',
+    targets:['n_bcell','n_plasma'],
+    targetLabel:'CD20+ B Cell Depletion (type II, enhanced)',
+    status:'offlabel', statusText:'Phase III · Emerging Evidence',
+    moa:'<strong>Type II anti-CD20 humanized antibody</strong> — glycoengineered for enhanced ADCC and direct cell death (non-apoptotic, lysosomal). More potent B cell depletion than rituximab. Does not induce CD20 internalisation (maintaining surface target). Deeper and more sustained B cell depletion.',
+    use:'Currently in Phase III trials for LN. Early results superior to placebo in refractory/inadequate responders to standard therapy. May replace rituximab in LN given greater efficacy in depleting B cells.',
+    evidence:'<strong>NOBILITY trial (Kidney Int 2022):</strong> Obinutuzumab + MMF + GC vs placebo in LN — significantly higher complete renal response (35% vs 23%) at 2 years. Phase III REGENCY trial ongoing.<br><div class="evidence-pill" style="background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.3);color:#c084fc">Monitoring: Infusion reactions, infections, hepatitis B reactivation screen</div>'
+  },
+  {
+    id:'dara', name:'Daratumumab', short:'DARA',
+    class:'bcell', color:'#c084fc',
+    targets:['n_plasma'],
+    targetLabel:'CD38+ Plasma Cell Depletion',
+    status:'offlabel', statusText:'Emerging · Refractory SLE',
+    moa:'<strong>Anti-CD38 monoclonal antibody</strong> → depletes <strong>long-lived plasma cells</strong> (CD38-high) which are resistant to rituximab/cyclophosphamide. Mechanism: ADCC, CDC, and apoptosis. Addresses the key limitation of anti-CD20 therapy — persistence of autoantibody-secreting plasma cells that do not express CD20.',
+    use:'Currently for highly refractory SLE with persistent high autoantibodies (anti-dsDNA, anti-Sm). Case series and early trials show dramatic reductions in autoantibodies and disease activity. May achieve "re-tolerisation" by clearing plasma cell niche.',
+    evidence:'<strong>Ostendorf et al (NEJM 2024):</strong> 8 patients with refractory SLE treated with daratumumab → near-complete depletion of plasma cells → marked reduction in anti-dsDNA and disease activity. Phase II RESET trial ongoing.<br><div class="evidence-pill" style="background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.3);color:#c084fc">Monitoring: Infusion reactions, IVIG requirement, infection (combined B+plasma cell depletion)</div>'
+  },
+  {
+    id:'ani', name:'Anifrolumab', short:'ANI',
+    class:'ifn', color:'#f472b6',
+    targets:['n_ifn','n_jak'],
+    targetLabel:'IFNAR1 — Type I IFN Receptor Blockade',
+    status:'approved', statusText:'FDA approved 2021 · Moderate-Severe SLE',
+    moa:'<strong>Monoclonal antibody against IFNAR1 (Type I IFN receptor subunit 1)</strong> → blocks signalling of <em>all</em> type I interferons (IFN-α, IFN-β, IFN-ω) → suppresses the IFN gene signature present in ~75% of SLE patients. Downstream: reduces IFN-driven lymphocyte activation, cytokine production, and autoantibody class-switching.',
+    use:'Moderate-to-severe SLE (non-renal, or with mild renal involvement) on background standard therapy. <strong>IV 300 mg every 4 weeks.</strong> Particularly effective in IFN-high patients. Not licensed for severe LN (IRIS trial ongoing).',
+    evidence:'<strong>TULIP-1 & TULIP-2 (NEJM 2020/2021):</strong> Anifrolumab met primary endpoint (BICLA response, 47.8% vs 31.5% in TULIP-2). Significant skin improvement (CLASI), reduction in oral steroids. MUSE trial preceded these.<br><div class="evidence-pill" style="background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.3);color:#f472b6">Avoid live vaccines. Monitoring: URTI, infections, shingles (consider VZV vaccine)</div>'
+  },
+  {
+    id:'bari', name:'Baricitinib', short:'BARI',
+    class:'ifn', color:'#f472b6',
+    targets:['n_jak'],
+    targetLabel:'JAK1/JAK2 Inhibition',
+    status:'approved', statusText:'FDA approved 2023 · SLE',
+    moa:'<strong>Selective JAK1 and JAK2 inhibitor</strong> → blocks phosphorylation of STAT proteins → prevents transcriptional responses to IFN-α/β (via JAK1), IL-6 (JAK1/2), GM-CSF (JAK2), and other cytokines. Targets the <em>convergence point</em> of multiple pro-inflammatory cytokine pathways elevated in SLE.',
+    use:'Active SLE in adults. Oral — 4 mg once daily. Effective for skin, musculoskeletal, and haematologic manifestations. Not yet a primary choice for severe LN. Convenient oral administration vs IV anifrolumab.',
+    evidence:'<strong>SLE-BRAVE-I and SLE-BRAVE-II trials (NEJM 2022):</strong> SLE-BRAVE-I met primary endpoint (SRI-4 response); SLE-BRAVE-II did not reach statistical significance but showed consistent trends. FDA approved for adult SLE 2023.<br><div class="evidence-pill" style="background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.3);color:#f472b6">Black box warning: thromboembolism, serious infections, malignancy. Avoid in high-risk thrombosis (APLS).</div>'
+  },
+  {
+    id:'nsaid', name:'NSAIDs', short:'NSAID',
+    class:'symptomatic', color:'#94a3b8',
+    targets:['n_damage'],
+    targetLabel:'COX-1/2 → Prostaglandins (Symptom Control)',
+    status:'approved', statusText:'Symptomatic · Arthritis / Serositis',
+    moa:'<strong>Inhibit cyclooxygenase (COX-1 and COX-2)</strong> → reduce prostaglandin and thromboxane synthesis → anti-inflammatory and analgesic effects at the site of tissue damage. Do not alter the underlying autoimmune cascade. Act at the end-stage inflammatory milieu.',
+    use:'Symptomatic relief for mild SLE: arthralgia, arthritis, serositis (pleuritis, pericarditis), fever. Short-term use only. <em>Caution:</em> NSAIDs can precipitate aseptic meningitis in SLE (rare, especially ibuprofen). Avoid in LN or CKD due to nephrotoxicity.',
+    evidence:'No SLE-specific RCTs. Standard anti-inflammatory evidence class. Aseptic meningitis association with ibuprofen well-documented in SLE — thought to be immune-complex mediated meningeal reaction.<br><div class="evidence-pill" style="background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.3);color:#94a3b8">Avoid long-term. Monitor renal function. Caution in LN, hypertension, APLS</div>'
+  }
+];
+
+/* ═══════════════════════════════════════════
+   RENDER DRUG CARDS
+═══════════════════════════════════════════ */
+let selectedDrug = null;
+
+function renderCards() {
+  const grid = document.getElementById('drug-grid');
+  grid.innerHTML = '';
+  drugs.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'drug-card';
+    card.id = 'card-' + d.id;
+    card.dataset.class = d.class;
+    card.style.setProperty('--card-color', d.color);
+    card.innerHTML = `
+      <div class="dc-top">
+        <div class="dc-name">${d.name}</div>
+        <div class="dc-short">${d.short}</div>
+      </div>
+      <div class="dc-target" style="color:${d.color}">⌖ ${d.targetLabel}</div>
+      <div class="dc-mech">${d.moa.replace(/<[^>]+>/g,'').substring(0,100)}…</div>
+      <div class="dc-status ${d.status}">${d.statusText}</div>
+    `;
+    card.addEventListener('click', () => selectDrug(d));
+    grid.appendChild(card);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   SELECT DRUG → highlight pathway + show detail
+═══════════════════════════════════════════ */
+function selectDrug(drug) {
+  // Deselect previous
+  document.querySelectorAll('.drug-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + drug.id).classList.add('selected');
+
+  selectedDrug = drug;
+  highlightPathway(drug);
+  showDetail(drug);
+  document.getElementById('detail-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ═══════════════════════════════════════════
+   PATHWAY HIGHLIGHTING
+═══════════════════════════════════════════ */
+const NODE_IDS = ['n_triggers','n_apoptosis','n_tlr79','n_ifn','n_jak','n_apc','n_tcell','n_blys','n_bcell','n_plasma','n_autoab','n_damage'];
+
+function highlightPathway(drug) {
+  // Reset all nodes
+  NODE_IDS.forEach(id => {
+    const el = document.getElementById('node-' + id);
+    if (!el) return;
+    const circle = el.querySelector('.node-circle');
+    const texts = el.querySelectorAll('.node-text');
+    circle.style.fill = '';
+    circle.style.stroke = '';
+    circle.style.filter = '';
+    circle.style.strokeWidth = '';
+    texts.forEach(t => t.style.fill = '');
+    el.classList.remove('node-active','node-pulse');
+  });
+
+  // Reset spine lines
+  document.querySelectorAll('.spine-line').forEach(l => {
+    l.style.stroke = '';
+    l.style.strokeWidth = '';
+    l.style.filter = '';
+  });
+
+  // Highlight target nodes
+  drug.targets.forEach(tid => {
+    const el = document.getElementById('node-' + tid);
+    if (!el) return;
+    const circle = el.querySelector('.node-circle');
+    const texts = el.querySelectorAll('.node-text');
+    circle.style.fill = drug.color + '18';
+    circle.style.stroke = drug.color;
+    circle.style.strokeWidth = '2.5';
+    circle.style.filter = `drop-shadow(0 0 8px ${drug.color}66)`;
+    texts.forEach(t => t.style.fill = drug.color);
+    el.classList.add('node-active','node-pulse');
+  });
+
+  // Show pathway info box
+  const infoBox = document.getElementById('pathway-drug-info');
+  infoBox.style.display = 'block';
+  infoBox.style.borderColor = drug.color;
+  document.getElementById('pathway-drug-name').textContent = drug.name;
+  document.getElementById('pathway-drug-name').style.color = drug.color;
+  document.getElementById('pathway-drug-target-label').textContent = '⌖ ' + drug.targetLabel;
+  document.getElementById('pathway-drug-target-label').style.color = drug.color;
+}
+
+/* ═══════════════════════════════════════════
+   DETAIL PANEL
+═══════════════════════════════════════════ */
+function showDetail(drug) {
+  const panel = document.getElementById('detail-panel');
+  panel.classList.add('visible');
+  document.getElementById('dp-color-bar').style.background = drug.color;
+  document.getElementById('dp-title').textContent = drug.name + ' (' + drug.short + ')';
+  document.getElementById('dp-title').style.color = drug.color;
+
+  const classLabels = {
+    antimalarial:'Antimalarial',conventional:'Conventional Immunosuppressant',
+    calcineurin:'Calcineurin Inhibitor',bcell:'B/Plasma Cell Targeted',
+    ifn:'IFN Pathway Inhibitor',symptomatic:'Symptomatic Agent'
+  };
+  document.getElementById('dp-subtitle').textContent = classLabels[drug.class] + ' · ' + drug.statusText;
+  document.getElementById('dp-moa').innerHTML = drug.moa;
+  document.getElementById('dp-use').innerHTML = drug.use;
+  document.getElementById('dp-evidence').innerHTML = drug.evidence;
+}
+
+/* ═══════════════════════════════════════════
+   CLASS FILTER
+═══════════════════════════════════════════ */
+function filterClass(cls, btn) {
+  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.drug-card').forEach(card => {
+    if (cls === 'all' || card.dataset.class === cls) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+renderCards();
+
+// Select first drug on load for demo
+setTimeout(() => selectDrug(drugs[0]), 400);
+</script>
+</body>
+</html>
