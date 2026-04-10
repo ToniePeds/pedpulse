@@ -129,7 +129,7 @@ export default function ToolsPage() {
       </main>
 
       <footer className="py-6 text-center text-xs text-gray-500 border-t border-gray-800">
-        © {new Date().getFullYear()} PedsPulse • Built with ❤️ & caffeine
+        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> PedsPulse • Built with ❤️ & caffeine
       </footer>
     </div>
   )

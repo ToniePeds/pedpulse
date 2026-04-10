@@ -78,7 +78,7 @@ export default function LoginPage() {
       </form>
 
       <footer className="mt-8 w-full max-w-md text-center text-xs text-gray-500 border-t border-gray-800 py-4">
-        © {new Date().getFullYear()} PedsPulse • Built with ❤️ & caffeine
+        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> PedsPulse • Built with ❤️ & caffeine
       </footer>
     </div>
   )
