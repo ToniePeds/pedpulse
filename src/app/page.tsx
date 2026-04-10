@@ -3,8 +3,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import NewsletterForm from '@/components/NewsletterForm'   // ← make sure this path is correct
-import InteractiveCourseSection from '@/components/interactive/InteractiveCourseSection'  // ← import it
+import NewsletterForm from '@/components/NewsletterForm'
+import InteractiveCourseSection from '@/components/interactive/InteractiveCourseSection'
+import AuthButton from '@/components/AuthButton'
 
 export default function LandingPage() {
   const [open, setOpen] = useState(false)
@@ -38,15 +39,13 @@ export default function LandingPage() {
             <Link href="/episodes" className="hover:text-teal-300">
               Episodes
             </Link>
+            <Link href="/tools" className="hover:text-teal-300">
+              Tools
+            </Link>
             <Link href="/about" className="hover:text-teal-300">
               About
             </Link>
-            <Link
-              href="/login"
-              className="px-4 py-1.5 rounded bg-teal-600 hover:bg-teal-500 text-xs font-semibold"
-            >
-              Admin
-            </Link>
+            <AuthButton />
           </nav>
 
           {/* Mobile hamburger */}
@@ -78,16 +77,15 @@ export default function LandingPage() {
             <Link href="/episodes" className="block" onClick={() => setOpen(false)}>
               Episodes
             </Link>
+            <Link href="/tools" className="block" onClick={() => setOpen(false)}>
+              Tools
+            </Link>
             <Link href="/about" className="block" onClick={() => setOpen(false)}>
               About
             </Link>
-            <Link
-              href="/login"
-              className="inline-block px-4 py-2 rounded bg-teal-600 hover:bg-teal-500 text-sm font-semibold mt-2"
-              onClick={() => setOpen(false)}
-            >
-              Admin
-            </Link>
+            <div onClick={() => setOpen(false)}>
+              <AuthButton />
+            </div>
           </nav>
         )}
       </header>
