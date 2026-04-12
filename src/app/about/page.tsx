@@ -1,215 +1,130 @@
-// app/about/page.tsx
+/* ----------------------------------------------------------------
+   app/about/page.tsx
+   Who we are, why this exists, and where it's going.
+---------------------------------------------------------------- */
 'use client'
 
-import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { HiPlay, HiPause } from 'react-icons/hi2'
+import SiteHeader from '@/components/SiteHeader'
 import NewsletterForm from '@/components/NewsletterForm'
-import { supabase } from '@/lib/supabaseClient'
+
+const VALUES = [
+  { title: 'Evidence First', blurb: 'Every episode, post, and tool is rooted in the latest guidelines — ISPAD, AAP, WHO, and the research that shapes real wards.', icon: '🔬', accent: '#2DD4BF' },
+  { title: 'Story-Led Learning', blurb: "Dry bullet-points don't stick at 3 AM. We wrap concepts in clinical stories because that's how the brain actually retains information.", icon: '📖', accent: '#FB7185' },
+  { title: 'Built for the Bedside', blurb: 'Fluid calculators, DKA simulators, quick-reference tools — things you can actually pull up mid-round without embarrassment.', icon: '🩺', accent: '#A78BFA' },
+  { title: 'Free & Open', blurb: 'No paywalls, no pharma sponsorships, no guilt-trip popups. Pediatric education should be accessible to every resident on every ward.', icon: '🌍', accent: '#FBBF24' },
+]
 
 export default function AboutPage() {
-  const [open, setOpen] = useState(false)
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const [playing, setPlaying] = useState(false)
-
-  // Supabase public URL for your narration
-  const {
-    data: { publicUrl: audioUrl },
-  } = supabase
-    .storage
-    .from('episode-audio')
-    .getPublicUrl('Hi rashid.mp3') // ← your key here
-
-  const togglePlay = () => {
-    if (!audioRef.current) return
-    if (playing) {
-      audioRef.current.pause()
-      setPlaying(false)
-    } else {
-      audioRef.current.play()
-      setPlaying(true)
-    }
-  }
-
-  const pillars = [
-    {
-      title: 'Evidence-Based',
-      desc: 'Every case & episode is backed by the latest pediatric guidelines and research.',
-    },
-    {
-      title: 'Story-Led',
-      desc: 'Learn through real-world clinical tales that stick with you when it matters.',
-    },
-    {
-      title: 'Interactive',
-      desc: 'Hands-on quizzes, case summaries, and community insights to reinforce learning.',
-    },
-  ]
-
   return (
-    <div className="min-h-screen bg-[#050A12] text-white flex flex-col">
+    <div className="min-h-screen bg-base text-foreground flex flex-col">
+      <SiteHeader active="/about" />
 
-      {/* —— Header */}
-      <header className="w-full border-b border-gray-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2 text-teal-400 font-bold text-2xl">
-            {/* your logo SVG */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 3a9 9 0 00-9 9v5a3 3 0 003 3h1a2 2 0 002-2v-4a2 2 0 00-2-2H5v-2a7 7 0 0114 0v2h-2a2 2 0 00-2 2v4a2 2 0 002 2h1a3 3 0 003-3v-5a9 9 0 00-9-9z"
-              />
-            </svg>
-            PedsPulse
-          </Link>
-
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link href="/episodes" className="hover:text-teal-300">Episodes</Link>
-            <Link href="/about" className="hover:text-teal-300">About</Link>
-            <Link
-              href="/login"
-              className="px-4 py-1.5 rounded bg-teal-600 hover:bg-teal-500 text-xs font-semibold"
-            >
-              Admin
-            </Link>
-          </nav>
-
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setOpen(o => !o)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded hover:bg-gray-800"
-            aria-label="Toggle menu"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              {open ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+      {/* Hero */}
+      <section className="relative py-20 px-6 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/4 w-[36rem] h-[36rem] -translate-x-1/2 rounded-full bg-teal-500/15 blur-[120px]" />
+          <div className="absolute top-20 right-10 w-[28rem] h-[28rem] rounded-full bg-fuchsia-500/10 blur-[120px]" />
         </div>
-
-        {/* Mobile menu */}
-        {open && (
-          <nav className="md:hidden bg-[#0B0F19] border-t border-gray-800 px-6 py-4 space-y-4">
-            <Link href="/episodes" className="block" onClick={() => setOpen(false)}>Episodes</Link>
-            <Link href="/about"   className="block" onClick={() => setOpen(false)}>About</Link>
-            <Link
-              href="/login"
-              className="inline-block px-4 py-2 rounded bg-teal-600 hover:bg-teal-500 text-sm font-semibold mt-2"
-              onClick={() => setOpen(false)}
-            >
-              Admin
-            </Link>
-          </nav>
-        )}
-      </header>
-
-      {/* —— About Content */}
-      <div className="flex-grow flex flex-col items-center px-6 py-16 relative overflow-hidden">
-
-        {/* Blob bg */}
-        <svg
-          className="absolute top-1/2 left-1/2 w-[120%] -translate-x-1/2 -translate-y-1/2 opacity-20 animate-spin-slow"
-          viewBox="0 0 500 500"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00FFC6" />
-              <stop offset="100%" stopColor="#009EFF" />
-            </linearGradient>
-          </defs>
-          <path
-            fill="url(#grad)"
-            d="M421.1,302.1Q384,354,320.3,375.8Q256.7,397.7,203.1,365.1Q149.5,332.5,114,286.2Q78.5,240,97.3,177.8Q116.1,115.7,171.1,85.1Q226.1,54.5,286.2,69.6Q346.2,84.7,386.6,128.4Q427,172.1,421.1,231.1Z"
-          />
-        </svg>
-
-        {/* Hero text */}
-        <h1 className="relative text-5xl sm:text-6xl font-extrabold mb-4 text-center z-10">
-          About PedsPulse
-        </h1>
-        <p className="relative max-w-2xl text-lg sm:text-xl text-gray-300 text-center z-10">
-          An evidence-based, story-led pediatrics learning platform built with ❤️ by Dr Rashid MD.
-        </p>
-
-        <Link
-          href="/episodes"
-          className="relative mt-6 inline-block bg-teal-600 hover:bg-teal-500 text-black font-semibold py-3 px-6 rounded-full transition z-10"
-        >
-          Start Learning
-        </Link>
-
-        {/* Audio widget */}
-        <div className="relative mt-12 z-10">
-          <div
-            className={`w-40 h-40 sm:w-52 sm:h-52 rounded-full border-4 border-teal-500 
-                        flex items-center justify-center transition-transform ${
-                          playing ? 'animate-pulse' : ''
-                        }`}
-          >
-            <button
-              onClick={togglePlay}
-              aria-label={playing ? 'Pause narration' : 'Play narration'}
-              className="text-teal-300 hover:text-white text-4xl"
-            >
-              {playing ? <HiPause /> : <HiPlay />}
-            </button>
-          </div>
-          <audio
-            ref={audioRef}
-            src={audioUrl}
-            preload="metadata"
-            onEnded={() => setPlaying(false)}
-            className="hidden"
-          />
-        </div>
-        <p className="relative mt-4 text-gray-400 z-10">Hear our mission in your ears</p>
-
-        {/* Pillars */}
-        <div className="relative mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl w-full z-10">
-          {pillars.map((p) => (
-            <div
-              key={p.title}
-              className="bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-2xl transition"
-            >
-              <h3 className="text-xl font-semibold mb-2">{p.title}</h3>
-              <p className="text-gray-300">{p.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Newsletter */}
-        <section id="newsletter" className="relative mt-20 w-full max-w-md z-10">
-          <h2 className="text-3xl font-bold mb-4 text-white text-center">Stay in the loop</h2>
-          <p className="text-gray-400 mb-6 text-center">
-            Get new pediatric pearls straight to your inbox.
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-teal-400 text-sm font-semibold tracking-widest uppercase mb-4">About PedsPulse</p>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight">
+            Pediatrics education that
+            <span className="bg-gradient-to-r from-teal-300 to-emerald-300 bg-clip-text text-transparent"> doesn&apos;t put you to sleep</span>.
+          </h1>
+          <p className="mt-6 text-lg text-muted leading-relaxed max-w-2xl mx-auto">
+            PedsPulse started as a side project between call shifts — a place to turn clinical
+            chaos into something teachable. It grew into a podcast, a blog, and a set of
+            bedside tools that residents actually use. No corporate sponsors, no paywall,
+            just pediatrics the way it should be taught.
           </p>
-          <NewsletterForm />
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* —— Footer */}
-      <footer className="py-6 text-center text-xs text-gray-500 border-t border-gray-800">
-        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> PedsPulse • Built with ❤️ & caffeine
+      {/* The Person */}
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-2xl bg-card ring-1 ring-border p-8 sm:p-10">
+            <div className="flex flex-col sm:flex-row gap-8 items-start">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-400/20 to-fuchsia-400/20 ring-1 ring-border flex items-center justify-center text-4xl shrink-0">👨‍⚕️</div>
+              <div>
+                <h2 className="text-2xl font-extrabold">Dr. Rashid</h2>
+                <p className="mt-1 text-sm text-teal-400 font-medium">Pediatrics Resident &middot; Aga Khan University</p>
+                <p className="mt-4 text-muted leading-relaxed">
+                  Ward rounds, call nights, morning handovers — and somewhere in between,
+                  building the tools and content I wish I&apos;d had as an intern. PedsPulse is
+                  my way of making pediatric medicine more human, more accessible, and honestly,
+                  a little more fun.
+                </p>
+                <p className="mt-3 text-faint leading-relaxed">
+                  Everything here is written, coded, and curated by hand. If you find something
+                  useful or spot something wrong, reach out — the best learning happens in conversation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Values */}
+      <section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-rose-500/15 text-rose-400">What We Believe</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">Principles, Not Just Content</h2>
+            <p className="mt-3 text-muted max-w-xl mx-auto">Four commitments that shape everything we publish.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-5">
+            {VALUES.map((v) => (
+              <div key={v.title} className="group relative p-6 rounded-2xl bg-card ring-1 ring-border hover:-translate-y-1 transition-all overflow-hidden">
+                <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition" style={{ backgroundColor: v.accent }} />
+                <div className="relative w-12 h-12 rounded-xl flex items-center justify-center text-2xl ring-1" style={{ backgroundColor: `${v.accent}20`, borderColor: v.accent }}>{v.icon}</div>
+                <h3 className="relative mt-4 text-xl font-bold">{v.title}</h3>
+                <p className="relative mt-2 text-sm text-muted leading-relaxed">{v.blurb}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What's Inside */}
+      <section className="py-16 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber-500/15 text-amber-400">What You&apos;ll Find</span>
+          <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">Podcast. Blog. Tools.</h2>
+          <p className="mt-3 text-muted max-w-xl mx-auto">Three formats, one mission: make pediatric learning stick.</p>
+          <div className="mt-10 grid sm:grid-cols-3 gap-6 text-left">
+            <Link href="/episodes" className="p-6 rounded-2xl bg-card ring-1 ring-border hover:ring-teal-400/30 transition-all group">
+              <div className="text-3xl mb-3">🎙️</div>
+              <h3 className="font-bold text-lg group-hover:text-teal-400 transition">Episodes</h3>
+              <p className="mt-2 text-sm text-muted">Short, punchy deep-dives into the cases and controversies you&apos;ll actually face on the ward.</p>
+            </Link>
+            <Link href="/blog" className="p-6 rounded-2xl bg-card ring-1 ring-border hover:ring-rose-400/30 transition-all group">
+              <div className="text-3xl mb-3">📝</div>
+              <h3 className="font-bold text-lg group-hover:text-rose-400 transition">Blog</h3>
+              <p className="mt-2 text-sm text-muted">Long-form takes on topics burning through pediatrics this week. Written between shifts, edited after coffee.</p>
+            </Link>
+            <Link href="/tools" className="p-6 rounded-2xl bg-card ring-1 ring-border hover:ring-amber-400/30 transition-all group">
+              <div className="text-3xl mb-3">🧪</div>
+              <h3 className="font-bold text-lg group-hover:text-amber-400 transition">Tools</h3>
+              <p className="mt-2 text-sm text-muted">Interactive calculators and simulators you can pull up mid-round. Runs in-browser, no install.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter */}
+      <section id="newsletter" className="py-20 px-6">
+        <div className="max-w-lg mx-auto text-center">
+          <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-500/15 text-emerald-400">The Pulse</span>
+          <h2 className="mt-3 text-3xl font-extrabold">Stay in the Loop</h2>
+          <p className="mt-3 text-muted">One short email when something new drops. No spam, no pharma reps, no guilt.</p>
+          <div className="mt-8"><NewsletterForm /></div>
+        </div>
+      </section>
+
+      <footer className="py-8 text-center text-xs text-faint border-t border-border">
+        © <span suppressHydrationWarning>{new Date().getFullYear()}</span> PedsPulse · Built with ❤️, ☕, and questionable sleep.
       </footer>
     </div>
   )

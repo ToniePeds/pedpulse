@@ -23,15 +23,22 @@ function ToolViewer() {
       className="flex-1 w-full border-0"
       style={{ minHeight: 'calc(100vh - 65px)' }}
       title="PedsPulse Tool"
+      // Legacy static tools live under /public/tools/*.html on the same
+      // origin as the app. allow-same-origin is kept so they can use
+      // localStorage for state — these files are trusted (committed to
+      // the repo by the maintainer). The sandbox still blocks top-frame
+      // navigation, popups, and form submission to other origins.
+      sandbox="allow-scripts allow-same-origin"
+      referrerPolicy="no-referrer"
     />
   )
 }
 
 export default function ToolViewPage() {
   return (
-    <div className="min-h-screen bg-[#050A12] text-white flex flex-col">
+    <div className="min-h-screen bg-base text-foreground flex flex-col">
       {/* Slim header */}
-      <header className="w-full border-b border-gray-800 shrink-0">
+      <header className="w-full border-b border-border shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
             <Link href="/tools" className="flex items-center gap-1 text-gray-400 hover:text-teal-400 text-sm transition-colors">

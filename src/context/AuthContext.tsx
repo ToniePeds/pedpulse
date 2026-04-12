@@ -3,11 +3,13 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
+import { isAdminEmail } from '@/lib/admin'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
+  isAdmin: boolean
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
@@ -50,8 +52,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  const isAdmin = isAdminEmail(user?.email)
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   )

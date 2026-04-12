@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import { isAdminEmail } from '@/lib/admin'
 
 /* ---------- small helper to create URL-friendly slugs ---------- */
 function slugify(str: string) {
@@ -34,11 +35,18 @@ export default function AdminNewEpisode() {
   const [uploadingCover, setUploadingCover] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  /* ---------- 2.  Auth gate ----------------------------------- */
+  /* ---------- 2.  Auth gate (admin emails only) --------------- */
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) router.replace('/login')
-      else setCheckingAuth(false)
+      const email = data.session?.user?.email
+      if (!data.session) {
+        router.replace('/login')
+      } else if (!isAdminEmail(email)) {
+        // Logged in but not an admin — bounce to home, not the dashboard.
+        router.replace('/')
+      } else {
+        setCheckingAuth(false)
+      }
     })
   }, [router])
 
